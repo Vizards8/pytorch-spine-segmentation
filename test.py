@@ -1,0 +1,73 @@
+# from matplotlib import pylab as plt
+# import nibabel as nib
+# from nibabel.viewers import OrthoSlicer3D
+#
+# file = '../dataset/train/source/Case1.nii.gz'  # 你的nii或者nii.gz文件路径
+# # file = '../dataset/slice_train/label/mask_case1_7.nii.gz'  # 你的nii或者nii.gz文件路径
+# img = nib.load(file)
+# data = img.get_fdata()
+#
+# import numpy as np
+#
+# print(np.unique(data))
+# print('img:', img)
+# print('header:', img.header['db_name'])  # 输出nii的头文件
+
+# width, height, queue = img.dataobj.shape
+
+# OrthoSlicer3D(img.dataobj).show()
+
+# num = 1
+# for i in range(queue):
+#     img_arr = img.dataobj[:, :, i]
+#     plt.subplot(5, 3, i + 1)
+#     plt.imshow(img_arr, cmap='gray')
+#     num += 1
+#
+# plt.show()
+
+# import SimpleITK as sitk
+#
+# file = '../dataset/train/source/Case1.nii.gz'  # 你的nii或者nii.gz文件路径
+# # file = '../dataset/train/label/mask_case1.nii.gz'  # 你的nii或者nii.gz文件路径
+# labelImage = sitk.ReadImage(file)  # in_file是nii.gz文件的路径
+# imag_results = sitk.GetArrayFromImage(labelImage)
+# spacing = labelImage.GetSpacing()
+# origin = labelImage.GetOrigin()
+# print('spacing is:', spacing)  # spacing和orgin是写入的内容
+# print('origin is:', origin)
+#
+# # file = '../dataset/train/source/Case1.nii.gz'  # 你的nii或者nii.gz文件路径
+# file = '../dataset/train/label/mask_case1.nii.gz'  # 你的nii或者nii.gz文件路径
+# labelImage = sitk.ReadImage(file)  # in_file是nii.gz文件的路径
+# imag_results = sitk.GetArrayFromImage(labelImage)
+# spacing = labelImage.GetSpacing()
+# origin = labelImage.GetOrigin()
+# print('spacing is:', spacing)  # spacing和orgin是写入的内容
+# print('origin is:', origin)
+
+# from GetData import GetLoader
+# from torch.utils.data import DataLoader
+#
+# dataset = GetLoader('../dataset/train/source/', '../dataset/train/label/')
+# train_loader = DataLoader(dataset,
+#                           batch_size=12,
+#                           shuffle=True,
+#                           pin_memory=True,
+#                           drop_last=False)
+# for i, batch in enumerate(train_loader):
+#     print(i)
+#     # print(batch['image'].shape)
+
+# import torch
+# import torch.nn as nn
+#
+# model = nn.Linear(10, 3)
+# criterion = nn.CrossEntropyLoss()
+#
+# x = torch.randn(16, 10)
+# y = torch.randint(0, 3, size=(16,))  # (16, )
+# logits = model(x)  # (16, 3)
+#
+# loss = criterion(logits, y)
+# print(loss)
