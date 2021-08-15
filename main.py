@@ -368,39 +368,40 @@ def train():
                 # print("val_loss:" + str(val_loss.item()))
                 total_loss.append(val_loss.item())
 
-            # x [BS,1,880,880]
-            # y [BS,18,880,880]
-            # outputs [BS,18,880,880]
-            if hp.mode == '2d':
-                x = x.unsqueeze(4)
-                y = y.unsqueeze(4)
-                outputs = outputs.unsqueeze(4)
-
             print("mean_val_loss:" + str(np.mean(np.array(total_loss))))
 
-            x = x[0].cpu().detach().numpy()
-            y = y[0].cpu().detach().numpy()
-            y = y[np.newaxis, :, :, :, :]
-            outputs = outputs[0].cpu().detach().numpy()
-            outputs = outputs[np.newaxis, :, :, :, :]
-            affine = batch['source']['affine'][0].numpy()
+            if epoch % args.epochs_per_checkpoint == 0:
+                # x [BS,1,880,880]
+                # y [BS,18,880,880]
+                # outputs [BS,18,880,880]
+                if hp.mode == '2d':
+                    x = x.unsqueeze(4)
+                    y = y.unsqueeze(4)
+                    outputs = outputs.unsqueeze(4)
 
-            y = onehot.onehot2mask(y)[0]
-            print('turn back from onehot:', np.unique(y))
-            outputs = onehot.onehot2mask(outputs)[0]
+                x = x[0].cpu().detach().numpy()
+                y = y[0].cpu().detach().numpy()
+                y = y[np.newaxis, :, :, :, :]
+                outputs = outputs[0].cpu().detach().numpy()
+                outputs = outputs[np.newaxis, :, :, :, :]
+                affine = batch['source']['affine'][0].numpy()
 
-            # x [1,880,880,1]
-            # y [1,880,880,1]
-            # outputs [1,880,880,1]
-            source_image = torchio.ScalarImage(tensor=x, affine=affine)
-            source_image.save(os.path.join(args.output_dir, f"val-step-{epoch:04d}-source" + hp.save_arch))
-            # source_image.save(os.path.join(args.output_dir,("step-{}-source.mhd").format(epoch)))
+                y = onehot.onehot2mask(y)[0]
+                print('turn back from onehot:', np.unique(y))
+                outputs = onehot.onehot2mask(outputs)[0]
 
-            label_image = torchio.ScalarImage(tensor=y, affine=affine)
-            label_image.save(os.path.join(args.output_dir, f"val-step-{epoch:04d}-gt" + hp.save_arch))
+                # x [1,880,880,1]
+                # y [1,880,880,1]
+                # outputs [1,880,880,1]
+                source_image = torchio.ScalarImage(tensor=x, affine=affine)
+                source_image.save(os.path.join(args.output_dir, f"val-step-{epoch:04d}-source" + hp.save_arch))
+                # source_image.save(os.path.join(args.output_dir,("step-{}-source.mhd").format(epoch)))
 
-            output_image = torchio.ScalarImage(tensor=outputs, affine=affine)
-            output_image.save(os.path.join(args.output_dir, f"val-step-{epoch:04d}-predict" + hp.save_arch))
+                label_image = torchio.ScalarImage(tensor=y, affine=affine)
+                label_image.save(os.path.join(args.output_dir, f"val-step-{epoch:04d}-gt" + hp.save_arch))
+
+                output_image = torchio.ScalarImage(tensor=outputs, affine=affine)
+                output_image.save(os.path.join(args.output_dir, f"val-step-{epoch:04d}-predict" + hp.save_arch))
 
     writer.close()
 
