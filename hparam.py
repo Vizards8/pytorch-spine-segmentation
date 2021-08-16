@@ -32,8 +32,8 @@ class hparams:
 
     # source_train_dir = './dataset/testslice/source'
     # label_train_dir = './dataset/testslice/label/'
-    source_train_dir = './dataset/slice_train/source'
-    label_train_dir = './dataset/slice_train/label'
+    source_train_dir = './dataset/slice_train/source/'
+    label_train_dir = './dataset/slice_train/label/'
     source_test_dir = './dataset/test/source/'
     label_test_dir = './dataset/test/label/'
 
