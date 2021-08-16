@@ -65,10 +65,10 @@ class MedData_train(torch.utils.data.Dataset):
             )
             torch.round(subject['label']['data'], out=subject['label']['data'])  # 处理为int
 
-            if np.equal(subject['source']['affine'], subject['label']['affine']).all:
-                self.subjects.append(subject)
-            else:
+            if not np.equal(subject['source']['affine'], subject['label']['affine']).all:
                 print("ERROR Handling:Affine not equal!", image_path.split('/')[-1])
+            else:
+                self.subjects.append(subject)
 
         self.transforms = self.transform()
 
@@ -80,6 +80,41 @@ class MedData_train(torch.utils.data.Dataset):
             samples_per_volume,
             UniformSampler(patch_size),
         )
+
+    # def __init__(self, images_dir, labels_dir):
+    #
+    #     if hp.mode == '3d':
+    #         patch_size = hp.patch_size
+    #     elif hp.mode == '2d':
+    #         # patch_size = (hp.patch_size,hp.patch_size,1)
+    #         patch_size = hp.patch_size
+    #     else:
+    #         raise Exception('no such kind of mode!')
+    #
+    #     images_dir = Path(images_dir)
+    #     image_paths = sorted(images_dir.glob(hp.fold_arch))
+    #     labels_dir = Path(labels_dir)
+    #     label_paths = sorted(labels_dir.glob(hp.fold_arch))
+    #     self.training_set = []
+    #     for (image_path, label_path) in zip(image_paths, label_paths):
+    #         self.training_set.append({'source': image_path, 'label': label_path})
+    #
+    # def __getitem__(self, index):
+    #
+    #     subject = tio.Subject(
+    #         source=tio.ScalarImage(self.dataset[index]['source']),
+    #         label=tio.LabelMap(self.dataset[index]['label']),
+    #     )
+    #     torch.round(subject['label']['data'], out=subject['label']['data'])  # 处理为int
+    #
+    #     if not np.equal(subject['source']['affine'], subject['label']['affine']).all:
+    #         print("ERROR Handling:Affine not equal!", image_path.split('/')[-1])
+    #
+    #     self.transforms = self.transform()
+    #
+    #     self.training_set = tio.SubjectsDataset(subject, transform=self.transforms)
+    #
+    #     return self.training_set
 
     def transform(self):
 
