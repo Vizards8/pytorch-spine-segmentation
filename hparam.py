@@ -19,9 +19,9 @@ class hparams:
     out_class = 18
     out_classlist = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18]
 
-    crop_or_pad_size = 880, 880, 1
+    crop_or_pad_size = 660, 660, 1
     # if 2D: 256,256,1 if 3D: 256,256,256
-    patch_size = 880, 880, 1
+    patch_size = 660, 660, 1
     # if 2D: 128,128,1 if 3D: 128,128,128
 
     # for test
