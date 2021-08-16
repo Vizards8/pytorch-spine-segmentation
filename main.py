@@ -188,6 +188,7 @@ def train():
                             shuffle=True,
                             pin_memory=False,
                             drop_last=False)
+    print('Data Loaded! Prepare to train......')
 
     # train_loader = DataLoader(train_dataset.queue_dataset,
     #                           batch_size=args.batch,
