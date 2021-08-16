@@ -184,12 +184,12 @@ def train():
     train_loader = DataLoader(train_dataset,
                               batch_size=args.batch,
                               shuffle=True,
-                              pin_memory=False,
+                              pin_memory=True,
                               drop_last=False)
     val_loader = DataLoader(val_dataset,
                             batch_size=args.batch,
                             shuffle=True,
-                            pin_memory=False,
+                            pin_memory=True,
                             drop_last=False)
     print('Train:', len(train_dataset))
     print('val:', len(val_dataset))
