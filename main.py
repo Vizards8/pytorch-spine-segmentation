@@ -185,12 +185,14 @@ def train():
                               batch_size=args.batch,
                               shuffle=True,
                               pin_memory=True,
-                              drop_last=False)
+                              drop_last=False,
+                              num_workers=2)
     val_loader = DataLoader(val_dataset,
                             batch_size=args.batch,
                             shuffle=True,
                             pin_memory=True,
-                            drop_last=False)
+                            drop_last=False,
+                            num_workers=2)
     print('Train:', len(train_dataset))
     print('val:', len(val_dataset))
     print('Data Loaded! Prepare to train......')
