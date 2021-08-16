@@ -46,7 +46,7 @@ class GetLoader(Dataset):
 
     # 该函数返回数据大小长度，目的是DataLoader方便划分，如果不知道大小，DataLoader会一脸懵逼
     def __len__(self):
-        return len(self.source)
+        return len(self.filename)
 
 
 # array[array_condition] = value
