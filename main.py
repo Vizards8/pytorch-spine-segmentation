@@ -179,7 +179,8 @@ def train():
     test_size = int(hp.test_split * len(full_dataset.training_set))
     train_size = len(full_dataset.training_set) - val_size - test_size
     train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(full_dataset.training_set,
-                                                                             [train_size, val_size, test_size])
+                                                                             [train_size, val_size, test_size],
+                                                                             torch.Generator().manual_seed(0))
     train_loader = DataLoader(train_dataset,
                               batch_size=args.batch,
                               shuffle=True,
