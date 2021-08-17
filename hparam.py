@@ -8,8 +8,8 @@ class hparams:
     epochs_per_checkpoint = 10
     batch_size = 1
     ckpt = None
-    val_split = 0.2
-    test_split = 0.5
+    val_split = 0.05
+    test_split = 0.9
     init_lr = 0.002
     scheduer_step_size = 20
     scheduer_gamma = 0.8
@@ -19,9 +19,9 @@ class hparams:
     out_class = 18
     out_classlist = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18]
 
-    crop_or_pad_size = 880, 880, 1
+    crop_or_pad_size = 256, 256, 1
     # if 2D: 256,256,1 if 3D: 256,256,256
-    patch_size = 880, 880, 1
+    patch_size = 256, 256, 1
     # if 2D: 128,128,1 if 3D: 128,128,128
 
     # for test

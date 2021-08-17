@@ -206,21 +206,20 @@ def train():
 
     start_time = time.time()
     for epoch in range(1, epochs + 1):
-        end_time = time.time()
-        print("epoch:" + str(epoch) + "duration:" + str(end_time - start_time))
-        start_time = end_time
+        # end_time = time.time()
+        # print("epoch:" + str(epoch) + "duration:" + str(end_time - start_time))
+        # start_time = end_time
 
         epoch += elapsed_epochs
 
         num_iters = 0
 
-        for i, batch in enumerate(train_loader):
+        loop_train = tqdm(enumerate(train_loader), total=len(train_loader))
+        for i, batch in loop_train:
 
             if hp.debug:
                 if i >= 1:
                     break
-
-            print(f"Batch: {i}/{len(train_loader)} epoch {epoch}")
 
             optimizer.zero_grad()
 
@@ -232,9 +231,11 @@ def train():
                 y = y.squeeze(4)
 
                 # y[y != 0] = 1
-            print(y.max())
 
-            print('before turn 2 onehot:', np.unique(np.array(y)))
+            # print(f"Batch: {i}/{len(train_loader)} epoch {epoch}")
+            # print(y.max())
+
+            # print('before turn 2 onehot:', np.unique(np.array(y)))
             y = onehot.mask2onehot(y, hp.out_classlist)
             x = torch.FloatTensor(x).cuda()
             y = torch.FloatTensor(y).cuda()
@@ -277,8 +278,14 @@ def train():
             # writer.add_scalar('Training/false_negtive_rate', mean_class_false_negtive_rate, iteration)
             # writer.add_scalar('Training/dice', dice, iteration)
 
-            print("loss:" + str(loss.item()))
-            print('lr:' + str(scheduler._last_lr[0]))
+            end_time = time.time()
+            loop_train.set_description(f'Epoch_Train [{epoch}/{epochs}]')
+            loop_train.set_postfix({
+                'loss': '{0:1.5f}'.format(loss.item()),
+                'duration': '{0:1.5f}'.format(end_time - start_time)
+            })
+            # print("loss:" + str(loss.item()))
+            # print('lr:' + str(scheduler._last_lr[0]))
 
         scheduler.step()
 
@@ -342,9 +349,10 @@ def train():
 
         # Validation per epoch
         with torch.no_grad():
-            print('Validation............')
+            # print('Validation............')
+            loop_val = tqdm(enumerate(val_loader), total=len(val_loader))
             total_loss = []
-            for i, batch in enumerate(val_loader):
+            for i, batch in loop_val:
                 # print(f"Batch: {i}/{len(val_loader)} epoch {epoch}")
 
                 x = batch['source']['data']
@@ -370,8 +378,16 @@ def train():
 
                 # print("val_loss:" + str(val_loss.item()))
                 total_loss.append(val_loss.item())
+                loop_val.set_description(f'Epoch_Valid [{epoch}/{epochs}]')
+                mean_val_loss = np.mean(np.array(total_loss))
+                end_time = time.time()
+                loop_val.set_postfix({
+                    'loss': '{0:1.5f}'.format(val_loss.item()),
+                    'loss_mean': '{0:1.5f}'.format(mean_val_loss),
+                    'duration': '{0:1.5f}'.format(end_time - start_time)
+                })
 
-            print("mean_val_loss:" + str(np.mean(np.array(total_loss))))
+            # print("mean_val_loss:" + str(np.mean(np.array(total_loss))))
 
             if epoch % args.epochs_per_checkpoint == 0:
                 # x [BS,1,880,880]
@@ -390,7 +406,7 @@ def train():
                 affine = batch['source']['affine'][0].numpy()
 
                 y = onehot.onehot2mask(y)[0]
-                print('turn back from onehot:', np.unique(y))
+                # print('turn back from onehot:', np.unique(y))
                 outputs = onehot.onehot2mask(outputs)[0]
 
                 # x [1,880,880,1]
@@ -405,6 +421,10 @@ def train():
 
                 output_image = torchio.ScalarImage(tensor=outputs, affine=affine)
                 output_image.save(os.path.join(args.output_dir, f"val-step-{epoch:04d}-predict" + hp.save_arch))
+
+        # 重置计时器
+        end_time = time.time()
+        start_time = end_time
 
     writer.close()
 
@@ -533,6 +553,11 @@ def test():
 
 
 if __name__ == '__main__':
+
+    import warnings
+
+    warnings.filterwarnings('ignore')
+
     if hp.train_or_test == 'train':
         train()
     elif hp.train_or_test == 'test':

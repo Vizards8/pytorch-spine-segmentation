@@ -188,10 +188,11 @@ class MedData_train(torch.utils.data.Dataset):
                     ZNormalization(),
                     RandomNoise(),
                     RandomFlip(axes=(0,)),
-                    OneOf({
-                        RandomAffine(): 0.8,
-                        RandomElasticDeformation(): 0.2,
-                    }), ])
+                    # OneOf({
+                    #     RandomAffine(): 0.8,
+                    #     RandomElasticDeformation(): 0.2,
+                    # }),
+                ])
             else:
                 training_transform = Compose([
                     CropOrPad((hp.crop_or_pad_size), padding_mode='reflect'),
