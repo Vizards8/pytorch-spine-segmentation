@@ -8,8 +8,8 @@ class hparams:
     epochs_per_checkpoint = 10
     batch_size = 1
     ckpt = None
-    val_split = 0.05
-    test_split = 0.9
+    val_split = 0.2
+    test_split = 0.5
     init_lr = 0.002
     scheduer_step_size = 20
     scheduer_gamma = 0.8
