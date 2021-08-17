@@ -175,26 +175,21 @@ def train():
     #                           drop_last=False)
 
     full_dataset = MedData_train(source_train_dir, label_train_dir)
-    val_size = int(hp.val_split * len(full_dataset.training_set))
-    test_size = int(hp.test_split * len(full_dataset.training_set))
-    train_size = len(full_dataset.training_set) - val_size - test_size
-    train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(full_dataset.training_set,
-                                                                             [train_size, val_size, test_size],
-                                                                             torch.Generator().manual_seed(0))
-    train_loader = DataLoader(train_dataset,
+
+    train_loader = DataLoader(full_dataset.train_dataset,
                               batch_size=args.batch,
                               shuffle=True,
                               pin_memory=True,
                               drop_last=False,
                               num_workers=2)
-    val_loader = DataLoader(val_dataset,
+    val_loader = DataLoader(full_dataset.val_dataset,
                             batch_size=args.batch,
                             shuffle=True,
                             pin_memory=True,
                             drop_last=False,
                             num_workers=2)
-    print('Train:', len(train_dataset))
-    print('val:', len(val_dataset))
+    print('TrainSet Total Number:', len(full_dataset.train_dataset))
+    print('valSet Total Number:', len(full_dataset.val_dataset))
     print('Data Loaded! Prepare to train......')
 
     # train_loader = DataLoader(train_dataset.queue_dataset,
