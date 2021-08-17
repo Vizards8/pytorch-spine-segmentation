@@ -49,9 +49,6 @@ class MedData_train(torch.utils.data.Dataset):
         else:
             raise Exception('no such kind of mode!')
 
-        queue_length = 5
-        samples_per_volume = 5
-
         images_dir = Path(images_dir)
         self.image_paths = sorted(images_dir.glob(hp.fold_arch))
         labels_dir = Path(labels_dir)
@@ -109,6 +106,9 @@ class MedData_train(torch.utils.data.Dataset):
     def load_from_dataset(self, dataset):
         # dataset 为list中嵌套字典，字典包含两个路径'source'与'label'
         subjects = []
+
+        queue_length = 5
+        samples_per_volume = 5
 
         for i in tqdm(dataset):
             subject = tio.Subject(
