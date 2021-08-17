@@ -190,7 +190,7 @@ def train():
                             num_workers=2)
     print('TrainSet Total Number:', len(full_dataset.train_dataset))
     print('valSet Total Number:', len(full_dataset.val_dataset))
-    print('Data Loaded! Prepare to train......')
+    print('Data Loaded! Prepare to train......\n')
 
     # train_loader = DataLoader(train_dataset.queue_dataset,
     #                           batch_size=args.batch,
