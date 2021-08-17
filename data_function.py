@@ -50,7 +50,7 @@ class MedData_train(torch.utils.data.Dataset):
             raise Exception('no such kind of mode!')
 
         queue_length = 5
-        samples_per_volume = 1
+        samples_per_volume = 5
 
         images_dir = Path(images_dir)
         self.image_paths = sorted(images_dir.glob(hp.fold_arch))
@@ -122,7 +122,15 @@ class MedData_train(torch.utils.data.Dataset):
             else:
                 subjects.append(subject)
 
-        return tio.SubjectsDataset(subjects, transform=self.transform())
+        subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
+
+        queue_dataset = Queue(
+            subjects_set,
+            queue_length,
+            samples_per_volume,
+        )
+
+        return queue_dataset
 
     # def __init__(self, images_dir, labels_dir):
     #
