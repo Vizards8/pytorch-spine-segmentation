@@ -34,7 +34,7 @@ def Slice(old_path, new_path):
         new_nii = nib.Nifti1Image(new_data, affine, hdr)
 
         # 保存nii文件，后面的参数是保存的文件名
-        new_name = name + '_' + str(i + 1) + '.nii.gz'
+        new_name = name + '_' + str(i + 1) + hp.save_arch
         nib.save(new_nii, os.path.join(new_path, new_name))
         print('Saved to ' + new_path + new_name)
 

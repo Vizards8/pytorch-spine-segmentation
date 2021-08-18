@@ -1,6 +1,7 @@
 class hparams:
-    train_or_test = 'train'
+    train_or_test = 'test'
     output_dir = 'logs'
+    inference_dir = 'results'
     aug = True
     latest_checkpoint_file = 'checkpoint_latest.pt'
     # total_epochs = 5000000
