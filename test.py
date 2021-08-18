@@ -71,3 +71,17 @@
 #
 # loss = criterion(logits, y)
 # print(loss)
+
+# import torchio as tio
+#
+# sampler = tio.GridSampler(patch_size=(256, 256, 1))
+# # colin = tio.datasets.Colin27()
+# colin = tio.Subject(
+#     source=tio.ScalarImage('./dataset/slice_train/source/Case1_7.nii.gz'),
+#     label=tio.LabelMap('./dataset/slice_train/label/mask_case1_7.nii.gz'),
+# )
+# for i, patch in enumerate(sampler(colin)):
+#     patch.source.save(f'patch_{i}.nii.gz')
+# # To figure out the number of patches beforehand:
+# sampler = tio.GridSampler(subject=colin, patch_size=(256, 256, 1))
+# print(len(sampler))
