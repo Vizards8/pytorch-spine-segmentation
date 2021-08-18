@@ -491,65 +491,121 @@ def test():
     print(os.path.join(args.output_dir, args.latest_checkpoint_file))
     ckpt = torch.load(os.path.join(args.output_dir, args.latest_checkpoint_file),
                       map_location=lambda storage, loc: storage)
+    epoch = ckpt["epoch"]
 
     model.load_state_dict(ckpt["model"])
 
     model.cuda()
 
     test_dataset = MedData_test(source_test_dir, label_test_dir)
-    znorm = ZNormalization()
 
-    if hp.mode == '3d':
-        patch_overlap = hp.patch_overlap
-        patch_size = hp.patch_size
-    elif hp.mode == '2d':
-        patch_overlap = hp.patch_overlap
-        patch_size = hp.patch_size
+    test_loader = DataLoader(test_dataset.test_dataset, batch_size=1, shuffle=False)
 
-    for i, subj in enumerate(test_dataset.subjects):
-        subj = znorm(subj)
-        grid_sampler = torchio.inference.GridSampler(
-            subj,
-            patch_size,
-            patch_overlap,
-        )
+    with torch.no_grad():
+        loop_test = tqdm(enumerate(test_loader), total=len(test_loader))
+        for i, batch in loop_test:
+            x = batch['source']['data']
+            y = batch['label']['data']
 
-        patch_loader = torch.utils.data.DataLoader(grid_sampler, batch_size=16)
-        aggregator = torchio.inference.GridAggregator(grid_sampler)
-        aggregator_1 = torchio.inference.GridAggregator(grid_sampler)
-        model.eval()
-        with torch.no_grad():
-            for patches_batch in tqdm(patch_loader):
+            if hp.mode == '2d':
+                x = x.squeeze(4)
+                y = y.squeeze(4)
+            # x [BS,1,880,880,1]
+            # y [BS,1,880,880,1]
 
-                input_tensor = patches_batch['source'][torchio.DATA].to(device)
-                locations = patches_batch[torchio.LOCATION]
+            # print('before turn 2 onehot:', np.unique(np.array(y)))
+            # y = onehot.mask2onehot(y, hp.out_classlist)
+            x = x.type(torch.FloatTensor).cuda()
+            y = torch.FloatTensor(y).cuda()
+            # y [BS,18,880,880,1]
 
-                if hp.mode == '2d':
-                    input_tensor = input_tensor.squeeze(4)
-                outputs = model(input_tensor)
+            outputs = model(x)
+            outputs = torch.sigmoid(outputs)
 
-                if hp.mode == '2d':
-                    outputs = outputs.unsqueeze(4)
-                logits = torch.sigmoid(outputs)
+            if hp.mode == '2d':
+                x = x.unsqueeze(4)
+                y = y.unsqueeze(4)
+                outputs = outputs.unsqueeze(4)
 
-                labels = logits.clone()
-                labels[labels > 0.5] = 1
-                labels[labels <= 0.5] = 0
+            x = x[0].cpu().detach().numpy()
+            y = y[0].cpu().detach().numpy()
+            # y = y[np.newaxis, :, :, :, :]
+            outputs = outputs[0].cpu().detach().numpy()
+            outputs = outputs[np.newaxis, :, :, :, :]
+            affine = batch['source']['affine'][0].numpy()
 
-                aggregator.add_batch(logits, locations)
-                aggregator_1.add_batch(labels, locations)
-        output_tensor = aggregator.get_output_tensor()
-        output_tensor_1 = aggregator_1.get_output_tensor()
+            # y = onehot.onehot2mask(y)[0]
+            # print('turn back from onehot:', np.unique(y))
+            outputs = onehot.onehot2mask(outputs)[0]
 
-        affine = subj['source']['affine']
+            # x [1,880,880,1]
+            # y [1,880,880,1]
+            # outputs [1,880,880,1]
+            source_image = torchio.ScalarImage(tensor=x, affine=affine)
+            source_image.save(os.path.join(hp.inference_dir, f"test-step-{epoch:04d}-source_" + str(i) + hp.save_arch))
+            # source_image.save(os.path.join(args.output_dir,("step-{}-source.mhd").format(epoch)))
 
-        label_image = torchio.ScalarImage(tensor=output_tensor.numpy(), affine=affine)
-        label_image.save(os.path.join(output_dir_test, f"{str(i)}-result_float" + hp.save_arch))
+            label_image = torchio.ScalarImage(tensor=y, affine=affine)
+            label_image.save(os.path.join(hp.inference_dir, f"test-step-{epoch:04d}-gt_" + str(i) + hp.save_arch))
 
-        # f"{str(i):04d}-result_float.mhd"
+            output_image = torchio.ScalarImage(tensor=outputs, affine=affine)
+            output_image.save(os.path.join(hp.inference_dir, f"test-step-{epoch:04d}-predict_" + str(i) + hp.save_arch))
 
-        output_image = torchio.ScalarImage(tensor=output_tensor_1.numpy(), affine=affine)
-        output_image.save(os.path.join(output_dir_test, f"{str(i)}-result_int" + hp.save_arch))
+            loop_test.set_description(f'Epoch_Test ')
+
+    # znorm = ZNormalization()
+    #
+    # if hp.mode == '3d':
+    #     patch_overlap = hp.patch_overlap
+    #     patch_size = hp.patch_size
+    # elif hp.mode == '2d':
+    #     patch_overlap = hp.patch_overlap
+    #     patch_size = hp.patch_size
+    #
+    # for i, subj in enumerate(test_dataset.subjects):
+    #     subj = znorm(subj)
+    #     grid_sampler = torchio.inference.GridSampler(
+    #         subj,
+    #         patch_size,
+    #         patch_overlap,
+    #     )
+    #
+    #     patch_loader = torch.utils.data.DataLoader(grid_sampler, batch_size=16)
+    #     aggregator = torchio.inference.GridAggregator(grid_sampler)
+    #     aggregator_1 = torchio.inference.GridAggregator(grid_sampler)
+    #     model.eval()
+    #     with torch.no_grad():
+    #         for patches_batch in tqdm(patch_loader):
+    #
+    #             input_tensor = patches_batch['source'][torchio.DATA].to(device)
+    #             locations = patches_batch[torchio.LOCATION]
+    #
+    #             if hp.mode == '2d':
+    #                 input_tensor = input_tensor.squeeze(4)
+    #             outputs = model(input_tensor)
+    #
+    #             if hp.mode == '2d':
+    #                 outputs = outputs.unsqueeze(4)
+    #             logits = torch.sigmoid(outputs)
+    #
+    #             labels = logits.clone()
+    #             labels[labels > 0.5] = 1
+    #             labels[labels <= 0.5] = 0
+    #
+    #             aggregator.add_batch(logits, locations)
+    #             aggregator_1.add_batch(labels, locations)
+    #     output_tensor = aggregator.get_output_tensor()
+    #     output_tensor_1 = aggregator_1.get_output_tensor()
+    #
+    #     affine = subj['source']['affine']
+    #
+    #     label_image = torchio.ScalarImage(tensor=output_tensor.numpy(), affine=affine)
+    #     label_image.save(os.path.join(output_dir_test, f"{str(i)}-result_float" + hp.save_arch))
+    #
+    #     # f"{str(i):04d}-result_float.mhd"
+    #
+    #     output_image = torchio.ScalarImage(tensor=output_tensor_1.numpy(), affine=affine)
+    #     output_image.save(os.path.join(output_dir_test, f"{str(i)}-result_int" + hp.save_arch))
 
 
 if __name__ == '__main__':
