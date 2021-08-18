@@ -124,16 +124,16 @@ class MedData_train(torch.utils.data.Dataset):
 
         subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
 
-        return subjects_set
-
-        queue_dataset = Queue(
-            subjects_set,
-            queue_length,
-            samples_per_volume,
-            UniformSampler(patch_size),
-        )
-
-        return queue_dataset
+        if hp.use_queue:
+            queue_dataset = Queue(
+                subjects_set,
+                queue_length,
+                samples_per_volume,
+                UniformSampler(patch_size),
+            )
+            return queue_dataset
+        else:
+            return subjects_set
 
     # def __init__(self, images_dir, labels_dir):
     #
