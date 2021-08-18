@@ -24,7 +24,7 @@ def Slice(old_path, new_path):
 
     width, height, queue = nii_img.dataobj.shape
     for i in range(queue):
-        unique_data = np.unique(nii_data[:, :, i])
+        # unique_data = np.unique(nii_data[:, :, i])
         # if unique_data.max() <= 17:
         print((np.unique(nii_data[:, :, i])).max())
         # continue
