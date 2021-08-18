@@ -40,15 +40,6 @@ from tqdm import tqdm
 
 class MedData_train(torch.utils.data.Dataset):
     def __init__(self, images_dir, labels_dir):
-
-        if hp.mode == '3d':
-            patch_size = hp.patch_size
-        elif hp.mode == '2d':
-            # patch_size = (hp.patch_size,hp.patch_size,1)
-            patch_size = hp.patch_size
-        else:
-            raise Exception('no such kind of mode!')
-
         images_dir = Path(images_dir)
         self.image_paths = sorted(images_dir.glob(hp.fold_arch))
         labels_dir = Path(labels_dir)
@@ -105,6 +96,15 @@ class MedData_train(torch.utils.data.Dataset):
 
     def load_from_dataset(self, dataset):
         # dataset 为list中嵌套字典，字典包含两个路径'source'与'label'
+
+        if hp.mode == '3d':
+            patch_size = hp.patch_size
+        elif hp.mode == '2d':
+            # patch_size = (hp.patch_size,hp.patch_size,1)
+            patch_size = hp.patch_size
+        else:
+            raise Exception('no such kind of mode!')
+
         subjects = []
 
         queue_length = 5
@@ -124,10 +124,13 @@ class MedData_train(torch.utils.data.Dataset):
 
         subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
 
+        return subjects_set
+
         queue_dataset = Queue(
             subjects_set,
             queue_length,
             samples_per_volume,
+            UniformSampler(patch_size),
         )
 
         return queue_dataset
