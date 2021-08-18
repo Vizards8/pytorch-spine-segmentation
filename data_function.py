@@ -65,11 +65,8 @@ class MedData_train(torch.utils.data.Dataset):
         # split完成，train,val分别从各自dataset中的路径加载
         print('Loading Dataset......\n')
 
-        if hp.train_or_test == 'train':
-            self.train_dataset = self.load_from_dataset(train_dataset)
-            self.val_dataset = self.load_from_dataset(val_dataset)
-        else:
-            self.test_dataset = self.load_from_dataset(test_dataset)
+        self.train_dataset = self.load_from_dataset(train_dataset)
+        self.val_dataset = self.load_from_dataset(val_dataset)
 
         # # 一次性加载所有data，内存开销巨大，口区
         # self.subjects = []
@@ -237,4 +234,4 @@ class MedData_test(torch.utils.data.Dataset):
 
         # self.transforms = self.transform()
 
-        self.training_set = tio.SubjectsDataset(self.subjects, transform=None)
+        self.test_dataset = tio.SubjectsDataset(self.subjects, transform=None)
