@@ -56,6 +56,6 @@ if __name__ == '__main__':
         Slice(label_train_dir + file, hp.label_train_dir)
 
     # # For the test
-    # old_path = '../dataset/train/label/mask_case1.nii.gz'
-    # new_path = '../dataset/testslice/label'
+    # old_path = '../dataset/train/source/Case200.nii.gz'
+    # new_path = '../dataset/testslice/source/'
     # Slice(old_path, new_path)
