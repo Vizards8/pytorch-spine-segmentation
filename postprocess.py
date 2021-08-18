@@ -2,6 +2,7 @@ import os
 import nibabel as nib
 from hparam import hparams as hp
 import numpy as np
+from pathlib import Path
 
 
 # Load a list of nii.gz files from old_path(should be a list), then stack and save as a new file to the new_path
@@ -35,12 +36,13 @@ if __name__ == '__main__':
     if not (os.path.exists(hp.inference_dir)):
         print('please inference first')
 
-    paths = sorted(os.listdir(hp.inference_dir))
+    inference_dir = Path(hp.inference_dir)
+    paths = sorted(inference_dir.glob(hp.fold_arch))
 
     title = []
     for path in paths:
-        if not path.split('.')[0].split('_')[0] in title:
-            title.append(path.split('.')[0].split('_')[0])
+        if not path.name.split('.')[0].split('_')[0] in title:
+            title.append(path.name.split('.')[0].split('_')[0])
 
     for i in title:
         stack(i, len(paths) / 3)
