@@ -6,10 +6,11 @@
 * 8.17 添加test_split参数，可调整每次读取的数据量，不必删数据集
 * 8.17 添加跑代码过程中的进度条，优化可读性
 * 8.18 添加use_queue参数，可将一张原图切成多张小图读取
-* 8.18 添加test，postprocess组合为三维MRI
+* 8.18 修改test
+* 8.18 添加postprocess，组合为三维MRI
 
 # Todo
-* 切片880*880过大，需要trick
+* 切片880*880过大，不合理，需要trick
 * 边缘切片没有18各分类，效果肯定不好，是否影响整体模型
 * RandomElasticDeformation()会报warning，为了观感，暂时去除
 * 其他模型

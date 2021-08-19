@@ -9,8 +9,7 @@ import numpy as np
 # old_path = './Case1.nii.gz' will be saved as 'new_path + Case1_1.nii.gz' after sliced
 
 def Slice(old_path, new_path):
-    if not (os.path.exists(new_path)):
-        os.mkdir(new_path)
+    os.makedirs(new_path, exist_ok=True)
     name = old_path.split('/')[-1].split('.')[0]
     nii_img = nib.load(old_path)
     nii_data = nii_img.get_fdata()
@@ -42,11 +41,6 @@ def Slice(old_path, new_path):
 if __name__ == '__main__':
     source_train_dir = './dataset/train/source/'
     label_train_dir = './dataset/train/label/'
-
-    if not os.path.exists(hp.source_train_dir):
-        os.makedirs(hp.source_train_dir)
-    if not os.path.exists(hp.label_train_dir):
-        os.makedirs(hp.label_train_dir)
 
     files = os.listdir(source_train_dir)
     for file in files:
