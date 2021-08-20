@@ -108,7 +108,7 @@ class MedData_train(torch.utils.data.Dataset):
         subjects = []
 
         queue_length = 5
-        samples_per_volume = 5
+        samples_per_volume = hp.samples_per_volume
 
         for i in tqdm(dataset):
             subject = tio.Subject(
