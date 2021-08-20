@@ -33,8 +33,6 @@ label_train_dir = hp.label_train_dir
 source_test_dir = hp.source_test_dir
 label_test_dir = hp.label_test_dir
 
-output_dir_test = hp.output_dir_test
-
 
 def parse_training_args(parser):
     """
@@ -89,8 +87,8 @@ def train():
     os.makedirs(args.output_dir, exist_ok=True)
 
     if hp.mode == '2d':
-        from models.two_d.unet import Unet
-        model = Unet(in_channels=hp.in_class, classes=hp.out_class)
+        # from models.two_d.unet import Unet
+        # model = Unet(in_channels=hp.in_class, classes=hp.out_class)
 
         # from models.two_d.miniseg import MiniSeg
         # model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
@@ -99,7 +97,10 @@ def train():
         # model = fcn(in_class =hp.in_class,n_class=hp.out_class)
 
         # from models.two_d.segnet import SegNet
-        # model = SegNet(input_nbr=hp.in_class,label_nbr=hp.out_class)
+        # model = SegNet(input_nbr=hp.in_class, label_nbr=hp.out_class)
+
+        from models.two_d.segnet2 import SegNet
+        model = SegNet(n_init_features=hp.in_class, num_classes=hp.out_class)
 
         # from models.two_d.deeplab import DeepLabV3
         # model = DeepLabV3(in_class=hp.in_class,class_num=hp.out_class)
@@ -108,7 +109,7 @@ def train():
         # model = ResNet34UnetPlus(num_channels=hp.in_class,num_class=hp.out_class)
 
         # from models.two_d.pspnet import PSPNet
-        # model = PSPNet(in_class=hp.in_class,n_classes=hp.out_class)
+        # model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
 
     elif hp.mode == '3d':
 
@@ -181,15 +182,15 @@ def train():
                               shuffle=True,
                               pin_memory=True,
                               drop_last=False,
-                              num_workers=2)
+                              num_workers=hp.num_workers)
     val_loader = DataLoader(full_dataset.val_dataset,
                             batch_size=args.batch,
                             shuffle=True,
                             pin_memory=True,
                             drop_last=False,
-                            num_workers=2)
+                            num_workers=hp.num_workers)
     print('TrainSet Total Number:', len(full_dataset.train_dataset))
-    print('valSet Total Number:', len(full_dataset.val_dataset))
+    print('ValSet Total Number:', len(full_dataset.val_dataset))
     print('Data Loaded! Prepare to train......\n')
 
     # train_loader = DataLoader(train_dataset.queue_dataset,
@@ -239,6 +240,10 @@ def train():
             y = onehot.mask2onehot(y, hp.out_classlist)
             x = torch.FloatTensor(x).cuda()
             y = torch.FloatTensor(y).cuda()
+
+            # # 查看模型详情，除非调试否则注释，占GPU内存的
+            # from torchsummary import summary
+            # print(summary(model, (1, 256, 256)))
 
             outputs = model(x)
             outputs = torch.sigmoid(outputs)
@@ -442,7 +447,7 @@ def test():
 
     from data_function import MedData_test
 
-    os.makedirs(output_dir_test, exist_ok=True)
+    os.makedirs(hp.inference_dir, exist_ok=True)
 
     if hp.mode == '2d':
         from models.two_d.unet import Unet
@@ -452,19 +457,19 @@ def test():
         # model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
 
         # from models.two_d.fcn import FCN32s as fcn
-        # model = fcn(in_class =hp.in_class,n_class=hp.out_class)
+        # model = fcn(in_class =hp.in_class, n_class=hp.out_class)
 
         # from models.two_d.segnet import SegNet
-        # model = SegNet(input_nbr=hp.in_class,label_nbr=hp.out_class)
+        # model = SegNet(input_nbr=hp.in_class, label_nbr=hp.out_class)
 
         # from models.two_d.deeplab import DeepLabV3
-        # model = DeepLabV3(in_class=hp.in_class,class_num=hp.out_class)
+        # model = DeepLabV3(in_class=hp.in_class, class_num=hp.out_class)
 
         # from models.two_d.unetpp import ResNet34UnetPlus
-        # model = ResNet34UnetPlus(num_channels=hp.in_class,num_class=hp.out_class)
+        # model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
 
         # from models.two_d.pspnet import PSPNet
-        # model = PSPNet(in_class=hp.in_class,n_classes=hp.out_class)
+        # model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
 
     elif hp.mode == '3d':
         from models.three_d.unet3d import UNet
@@ -500,6 +505,7 @@ def test():
     test_dataset = MedData_test(source_test_dir, label_test_dir)
 
     test_loader = DataLoader(test_dataset.test_dataset, batch_size=1, shuffle=False)
+    model.eval()
 
     with torch.no_grad():
         loop_test = tqdm(enumerate(test_loader), total=len(test_loader))

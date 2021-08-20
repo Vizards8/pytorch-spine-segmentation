@@ -8,10 +8,11 @@
 * 8.18 添加use_queue参数，可将一张原图切成多张小图读取
 * 8.18 修改test
 * 8.18 添加postprocess，组合为三维MRI
+* 8.19 添加SegNet支持
 
 # Todo
 * 切片880*880过大，不合理，需要trick
-* 边缘切片没有18各分类，效果肯定不好，是否影响整体模型
+* 边缘切片没有18个分类，效果肯定不好，是否影响整体模型
 * RandomElasticDeformation()会报warning，为了观感，暂时去除
 * 其他模型
 * 其他Loss函数
