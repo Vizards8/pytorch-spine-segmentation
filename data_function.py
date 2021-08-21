@@ -117,7 +117,7 @@ class MedData_train(torch.utils.data.Dataset):
             )
             torch.round(subject['label']['data'], out=subject['label']['data'])  # 处理为int
 
-            if not np.equal(subject['source']['affine'], subject['label']['affine']).all:
+            if not np.all(np.equal(subject['source']['affine'], subject['label']['affine'])):
                 print("ERROR Handling:Affine not equal!", image_path.split('/')[-1])
             else:
                 subjects.append(subject)
