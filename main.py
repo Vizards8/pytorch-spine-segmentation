@@ -38,6 +38,7 @@ def parse_training_args(parser):
     """
     Parse commandline arguments.
     """
+    print('Using Device: ', device)
 
     parser.add_argument('-o', '--output_dir', type=str, default=hp.output_dir, required=False,
                         help='Directory to save checkpoints')
@@ -87,11 +88,29 @@ def train():
     os.makedirs(args.output_dir, exist_ok=True)
 
     if hp.mode == '2d':
-        # from models.two_d.unet import Unet
-        # model = Unet(in_channels=hp.in_class, classes=hp.out_class)
+        # from models.two_d.segnet2 import SegNet
+        # model = SegNet(n_init_features=hp.in_class, num_classes=hp.out_class)
+
+        from models.two_d.unet import Unet
+        model = Unet(in_channels=hp.in_class, classes=hp.out_class)
 
         # from models.two_d.miniseg import MiniSeg
         # model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
+
+        # from models.two_d.pspnet import PSPNet
+        # model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
+
+        # ATTU_Net 512*512*1
+        # from models.two_d.attunet import AttU_Net
+        # model = AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
+
+        # R2U_Net 512*512*1
+        # from models.two_d.R2U_Net import R2U_Net
+        # model = R2U_Net(img_ch=hp.in_class, output_ch=hp.out_class)
+
+        # R2AttU_Net 265*256*1
+        # from models.two_d.R2AttU_Net import R2AttU_Net
+        # model = R2AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
 
         # from models.two_d.fcn import FCN32s as fcn
         # model = fcn(in_class =hp.in_class,n_class=hp.out_class)
@@ -99,17 +118,12 @@ def train():
         # from models.two_d.segnet import SegNet
         # model = SegNet(input_nbr=hp.in_class, label_nbr=hp.out_class)
 
-        from models.two_d.segnet2 import SegNet
-        model = SegNet(n_init_features=hp.in_class, num_classes=hp.out_class)
-
         # from models.two_d.deeplab import DeepLabV3
         # model = DeepLabV3(in_class=hp.in_class,class_num=hp.out_class)
 
         # from models.two_d.unetpp import ResNet34UnetPlus
         # model = ResNet34UnetPlus(num_channels=hp.in_class,num_class=hp.out_class)
 
-        # from models.two_d.pspnet import PSPNet
-        # model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
 
     elif hp.mode == '3d':
 
@@ -153,17 +167,17 @@ def train():
         for state in optimizer.state.values():
             for k, v in state.items():
                 if torch.is_tensor(v):
-                    state[k] = v.cuda()
+                    state[k] = v.to(device)
 
         # scheduler.load_state_dict(ckpt["scheduler"])
         elapsed_epochs = ckpt["epoch"]
     else:
         elapsed_epochs = 0
 
-    model.cuda()
+    model.to(device)
 
     from utils.loss import SoftDiceLoss
-    criterion = SoftDiceLoss(hp.out_class).cuda()
+    criterion = SoftDiceLoss(hp.out_class).to(device)
 
     writer = SummaryWriter(args.output_dir)
 
@@ -238,8 +252,8 @@ def train():
 
             # print('before turn 2 onehot:', np.unique(np.array(y)))
             y = onehot.mask2onehot(y, hp.out_classlist)
-            x = torch.FloatTensor(x).cuda()
-            y = torch.FloatTensor(y).cuda()
+            x = torch.FloatTensor(x).to(device)
+            y = torch.FloatTensor(y).to(device)
 
             # # 查看模型详情，除非调试否则注释，占GPU内存的
             # from torchsummary import summary
@@ -266,7 +280,7 @@ def train():
             # labels = outputs.clone()
             # labels = onehot.onehot2mask(labels.cpu().detach().numpy())
             # labels = onehot.mask2onehot(labels, hp.out_classlist)
-            # labels = torch.FloatTensor(labels).cuda()
+            # labels = torch.FloatTensor(labels).to(device)
             # for j in range(hp.out_class):
             #     false_positive_rate, false_negtive_rate = FP_FN_metric(labels.cpu()[:, i:i + 1, :, :],
             #                                                            y.cpu()[:, i:i + 1, :, :])
@@ -371,8 +385,8 @@ def train():
 
                 # print('before turn 2 onehot:', np.unique(np.array(y)))
                 y = onehot.mask2onehot(y, hp.out_classlist)
-                x = x.type(torch.FloatTensor).cuda()
-                y = torch.FloatTensor(y).cuda()
+                x = x.type(torch.FloatTensor).to(device)
+                y = torch.FloatTensor(y).to(device)
                 # y [BS,18,880,880]
 
                 outputs = model(x)
@@ -500,7 +514,7 @@ def test():
 
     model.load_state_dict(ckpt["model"])
 
-    model.cuda()
+    model.to(device)
 
     test_dataset = MedData_test(source_test_dir, label_test_dir)
 
@@ -521,8 +535,8 @@ def test():
 
             # print('before turn 2 onehot:', np.unique(np.array(y)))
             # y = onehot.mask2onehot(y, hp.out_classlist)
-            x = x.type(torch.FloatTensor).cuda()
-            y = torch.FloatTensor(y).cuda()
+            x = x.type(torch.FloatTensor).to(device)
+            y = torch.FloatTensor(y).to(device)
             # y [BS,18,880,880,1]
 
             outputs = model(x)
