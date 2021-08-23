@@ -127,8 +127,8 @@ def diceCoeffv2(pred, gt, eps=1e-5):
 
 def FP_FN_metric(pred, gt, eps=1e-5):
     r"""computational formula：
-        False_Positive = fp / (fp + tn)
-        False_Negtive = fn / (fn + tp)
+        False_Positive_rate = fp / (fp + tn)
+        False_Negtive_rate = fn / (fn + tp)
     """
 
     N = gt.size(0)
@@ -401,20 +401,7 @@ if __name__ == '__main__':
         [[1, 0, 1, 1],
          [0, 1, 1, 0],
          [0, 0, 0, 0],
-         [1, 0, 0, 1]]],
-        [
-            [[0, 1, 0, 0],
-             [1, 0, 0, 1],
-             [1, 0, 0, 1],
-             [0, 1, 1, 0]],
-            [[0, 0, 0, 0],
-             [0, 0, 0, 0],
-             [0, 1, 1, 0],
-             [0, 0, 0, 0]],
-            [[1, 0, 1, 1],
-             [0, 1, 1, 0],
-             [0, 0, 0, 0],
-             [1, 0, 0, 1]]]
+         [1, 0, 0, 1]]]
     ])
 
     gt = torch.Tensor([[
@@ -429,23 +416,10 @@ if __name__ == '__main__':
         [[1, 0, 0, 1],
          [0, 1, 1, 0],
          [0, 0, 0, 0],
-         [1, 0, 0, 1]]],
-        [
-            [[0, 1, 1, 0],
-             [1, 0, 0, 1],
-             [1, 0, 0, 1],
-             [0, 1, 1, 0]],
-            [[0, 0, 0, 0],
-             [0, 0, 0, 0],
-             [0, 1, 1, 0],
-             [0, 0, 0, 0]],
-            [[1, 0, 0, 1],
-             [0, 1, 1, 0],
-             [0, 0, 0, 0],
-             [1, 0, 0, 1]]]
+         [1, 0, 0, 1]]]
     ])
 
-    dice1 = diceCoeff(pred[:, 0:1, :], gt[:, 0:1, :], activation=None)
-    dice2 = jaccard(pred[:, 0:1, :], gt[:, 0:1, :], activation=None)
-    dice3 = diceCoeffv3(pred[:, 0:1, :], gt[:, 0:1, :], activation=None)
+    dice1 = diceCoeff(pred[:, 0:1, :], gt[:, 0:1, :])
+    dice2 = jaccard(pred[:, 0:1, :], gt[:, 0:1, :])
+    dice3 = diceCoeffv3(pred[:, 0:1, :], gt[:, 0:1, :])
     print(dice1, dice2, dice3)
