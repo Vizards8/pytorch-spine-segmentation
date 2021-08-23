@@ -10,6 +10,7 @@
 * 8.18 添加postprocess，组合为三维MRI
 * 8.19 添加SegNet支持
 * 8.20 添加PSPNet支持
+* 8.23 添加Using Device，方便调试
 
 # Todo
 * 切片880*880过大，不合理，需要trick
