@@ -251,7 +251,7 @@ def train():
             # print(y.max())
 
             # print('before turn 2 onehot:', np.unique(np.array(y)))
-            y = onehot.mask2onehot(y, hp.out_classlist)
+            y = onehot.mask2onehot(y, hp.out_classlist)  # 转成one-hot
             x = torch.FloatTensor(x).to(device)
             y = torch.FloatTensor(y).to(device)
 
@@ -262,11 +262,6 @@ def train():
             outputs = model(x)
             outputs = torch.sigmoid(outputs)
 
-            # for metrics
-            # logits = torch.sigmoid(outputs)
-            # labels = logits.clone()
-            # labels[labels > 0.5] = 1
-            # labels[labels <= 0.5] = 0
             loss = criterion(outputs, y)
 
             num_iters += 1
@@ -275,27 +270,21 @@ def train():
             optimizer.step()
             iteration += 1
 
-            # class_false_positive_rate = []
-            # class_false_negtive_rate = []
-            # labels = outputs.clone()
-            # labels = onehot.onehot2mask(labels.cpu().detach().numpy())
-            # labels = onehot.mask2onehot(labels, hp.out_classlist)
-            # labels = torch.FloatTensor(labels).to(device)
-            # for j in range(hp.out_class):
-            #     false_positive_rate, false_negtive_rate = FP_FN_metric(labels.cpu()[:, i:i + 1, :, :],
-            #                                                            y.cpu()[:, i:i + 1, :, :])
-            #     class_false_positive_rate.append(false_positive_rate)
-            #     class_false_negtive_rate.append(false_negtive_rate)
-            # print('class_false_negtive_rate:', class_false_positive_rate)
-            # print('class_false_negtive_rate:', class_false_negtive_rate)
-            # mean_class_false_positive_rate = sum(class_false_positive_rate) / len(class_false_positive_rate)
-            # mean_class_false_negtive_rate = sum(class_false_negtive_rate) / len(class_false_negtive_rate)
+            # for metrics
+            predict = outputs.clone()
+            predict = onehot.onehot2mask(predict.cpu().detach().numpy())
+            # print(np.unique(predict))
+            predict = onehot.mask2onehot(predict, hp.out_classlist)
+            predict = torch.FloatTensor(predict).to(device)  # 转换为torch.tensor才能送进gpu
+            IOU, dice, false_positive_rate, false_negtive_rate, acc = metrics(predict, y, hp.out_class)
 
             ## log
             writer.add_scalar('Training/Loss', loss.item(), iteration)
-            # writer.add_scalar('Training/false_positive_rate', mean_class_false_positive_rate, iteration)
-            # writer.add_scalar('Training/false_negtive_rate', mean_class_false_negtive_rate, iteration)
-            # writer.add_scalar('Training/dice', dice, iteration)
+            writer.add_scalar('Training/IOU', IOU, iteration)
+            writer.add_scalar('Training/Dice', dice, iteration)
+            writer.add_scalar('Training/Acc', acc, iteration)
+            writer.add_scalar('Training/False_Positive_rate', false_positive_rate, iteration)
+            writer.add_scalar('Training/False_Negtive_rate', false_negtive_rate, iteration)
 
             end_time = time.time()
             loop_train.set_description(f'Epoch_Train [{epoch}/{epochs}]')
@@ -385,7 +374,7 @@ def train():
 
                 # print('before turn 2 onehot:', np.unique(np.array(y)))
                 y = onehot.mask2onehot(y, hp.out_classlist)
-                x = x.type(torch.FloatTensor).to(device)
+                x = torch.FloatTensor(x).to(device)
                 y = torch.FloatTensor(y).to(device)
                 # y [BS,18,880,880]
 

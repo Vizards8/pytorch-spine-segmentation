@@ -13,6 +13,29 @@ False Negative（假负 , FN）预测为负的正样本
 """
 
 
+def metrics(predict, label, out_class):
+    """Calculate the required metrics"""
+    IOU_list = []
+    Dice_list = []
+    false_positive_rate_list = []
+    false_negtive_rate_list = []
+    acc = []
+    for i in range(1, out_class):
+        Dice_list.append(diceCoeffv2(predict[:, i:i + 1, :, :], label[:, i:i + 1, :, :]))
+        IOU_list.append(IOU(predict[:, i:i + 1, :, :], label[:, i:i + 1, :, :]))
+        FP_FN_rate_list = FP_FN_rate(predict[:, i:i + 1, :, :], label[:, i:i + 1, :, :])
+        false_positive_rate_list.append(FP_FN_rate_list[0])
+        false_negtive_rate_list.append(FP_FN_rate_list[1])
+    for i in range(out_class):
+        acc.append(accuracy(predict[:, i:i + 1, :, :], label[:, i:i + 1, :, :]))
+    return mean(IOU_list), mean(Dice_list), mean(false_positive_rate_list), mean(false_negtive_rate_list), mean(acc)
+
+
+def mean(list):
+    """计算平均值"""
+    return sum(list) / len(list)
+
+
 def batch_pix_accuracy(predict, target):
     """Batch Pixel Accuracy
     Args:
@@ -87,7 +110,7 @@ def intersection_and_union(im_pred, im_lab, num_class):
 
 def diceCoeff(pred, gt, smooth=1e-5, ):
     r""" computational formula：
-        dice = (2 * (pred ∩ gt)) / (pred ∪ gt)
+        dice = (2 * (pred ∩ gt)) / |pred| + |gt|
     """
 
     N = gt.size(0)
@@ -125,7 +148,25 @@ def diceCoeffv2(pred, gt, eps=1e-5):
     return score.sum() / N
 
 
-def FP_FN_metric(pred, gt, eps=1e-5):
+def IOU(pred, gt, eps=1e-5):
+    r""" computational formula：
+        IOU = tp / (tp + fp + fn)
+    """
+
+    N = gt.size(0)
+    pred_flat = pred.view(N, -1)
+    gt_flat = gt.view(N, -1)
+
+    tp = torch.sum((pred_flat != 0) * (gt_flat != 0), dim=1)
+    fp = torch.sum((pred_flat != 0) * (gt_flat == 0), dim=1)
+    tn = torch.sum((pred_flat == 0) * (gt_flat == 0), dim=1)
+    fn = torch.sum((pred_flat == 0) * (gt_flat != 0), dim=1)
+    score = (tp + eps) / (tp + fp + fn + eps)
+
+    return score.sum() / N
+
+
+def FP_FN_rate(pred, gt, eps=1e-5):
     r"""computational formula：
         False_Positive_rate = fp / (fp + tn)
         False_Negtive_rate = fn / (fn + tp)
@@ -135,10 +176,10 @@ def FP_FN_metric(pred, gt, eps=1e-5):
     pred_flat = pred.view(N, -1)
     gt_flat = gt.view(N, -1)
 
-    tp = torch.sum(gt_flat * pred_flat, dim=1)
-    tn = torch.sum((pred_flat == 0) * (gt_flat == 0))
-    fp = torch.sum(gt_flat, dim=1) - tp
-    fn = torch.sum(pred_flat, dim=1) - tp
+    tp = torch.sum((pred_flat != 0) * (gt_flat != 0), dim=1)
+    fp = torch.sum((pred_flat != 0) * (gt_flat == 0), dim=1)
+    tn = torch.sum((pred_flat == 0) * (gt_flat == 0), dim=1)
+    fn = torch.sum((pred_flat == 0) * (gt_flat != 0), dim=1)
 
     false_positive_rate = fp / (fp + tn + eps)
     false_negtive_rate = fn / (fn + tp + eps)
@@ -221,10 +262,11 @@ def accuracy(pred, gt, eps=1e-5):
     N = gt.size(0)
     pred_flat = pred.view(N, -1)
     gt_flat = gt.view(N, -1)
-    tp = torch.sum((pred_flat != 0) * (gt_flat != 0))
-    fp = torch.sum((pred_flat != 0) * (gt_flat == 0))
-    tn = torch.sum((pred_flat == 0) * (gt_flat == 0))
-    fn = torch.sum((pred_flat == 0) * (gt_flat != 0))
+
+    tp = torch.sum((pred_flat != 0) * (gt_flat != 0), dim=1)
+    fp = torch.sum((pred_flat != 0) * (gt_flat == 0), dim=1)
+    tn = torch.sum((pred_flat == 0) * (gt_flat == 0), dim=1)
+    fn = torch.sum((pred_flat == 0) * (gt_flat != 0), dim=1)
 
     score = ((tp + tn).float() + eps) / ((tp + fp + tn + fn).float() + eps)
 
@@ -274,111 +316,6 @@ def specificity(pred, gt, eps=1e-5):
 
 def recall(pred, gt, eps=1e-5):
     return sensitivity(pred, gt)
-
-
-class Surface(object):
-    # The edge points of the mask object.
-    __mask_edge_points = None
-    # The edge points of the reference object.
-    __reference_edge_points = None
-    # The nearest neighbours distances between mask and reference edge points.
-    __mask_reference_nn = None
-    # The nearest neighbours distances between reference and mask edge points.
-    __reference_mask_nn = None
-    # Distances of the two objects surface points.
-    __distance_matrix = None
-
-    def __init__(self, mask, reference, physical_voxel_spacing=[1, 1, 1], mask_offset=[0, 0, 0],
-                 reference_offset=[0, 0, 0], connectivity=1):
-        self.connectivity = connectivity
-        # compute edge images
-        mask_edge_image = self.compute_contour(mask)
-        reference_edge_image = self.compute_contour(reference)
-        mask_pts = mask_edge_image.nonzero()
-        mask_edge_points = list(zip(mask_pts[0], mask_pts[1], mask_pts[2]))
-        reference_pts = reference_edge_image.nonzero()
-        reference_edge_points = list(zip(reference_pts[0], reference_pts[1], reference_pts[2]))
-        # check if there is actually an object present
-        if 0 >= len(mask_edge_points):
-            raise Exception('The mask image does not seem to contain an object.')
-        if 0 >= len(reference_edge_points):
-            raise Exception('The reference image does not seem to contain an object.')
-        # add offsets to the voxels positions and multiply with physical voxel spacing
-        # to get the real positions in millimeters
-        physical_voxel_spacing = scipy.array(physical_voxel_spacing)
-        mask_edge_points = scipy.array(mask_edge_points, dtype='float64')
-        mask_edge_points += scipy.array(mask_offset)
-        mask_edge_points *= physical_voxel_spacing
-        reference_edge_points = scipy.array(reference_edge_points, dtype='float64')
-        reference_edge_points += scipy.array(reference_offset)
-        reference_edge_points *= physical_voxel_spacing
-        # set member vars
-        self.__mask_edge_points = mask_edge_points
-        self.__reference_edge_points = reference_edge_points
-
-    def get_maximum_symmetric_surface_distance(self):
-        # Get the maximum of the nearest neighbour distances
-        A_B_distance = self.get_mask_reference_nn().max()
-        B_A_distance = self.get_reference_mask_nn().max()
-        # compute result and return
-        return min(A_B_distance, B_A_distance)
-
-    def get_root_mean_square_symmetric_surface_distance(self):
-        # get object sizes
-        mask_surface_size = len(self.get_mask_edge_points())
-        reference_surface_sice = len(self.get_reference_edge_points())
-        # get minimal nearest neighbours distances
-        A_B_distances = self.get_mask_reference_nn()
-        B_A_distances = self.get_reference_mask_nn()
-        # square the distances
-        A_B_distances_sqrt = A_B_distances * A_B_distances
-        B_A_distances_sqrt = B_A_distances * B_A_distances
-        # sum the minimal distances
-        A_B_distances_sum = A_B_distances_sqrt.sum()
-        B_A_distances_sum = B_A_distances_sqrt.sum()
-        # compute result and return
-        return math.sqrt(1. / (mask_surface_size + reference_surface_sice)) * math.sqrt(
-            A_B_distances_sum + B_A_distances_sum)
-
-    def get_average_symmetric_surface_distance(self):
-        # get object sizes
-        mask_surface_size = len(self.get_mask_edge_points())
-        reference_surface_sice = len(self.get_reference_edge_points())
-        # get minimal nearest neighbours distances
-        A_B_distances = self.get_mask_reference_nn()
-        B_A_distances = self.get_reference_mask_nn()
-        # sum the minimal distances
-        A_B_distances = A_B_distances.sum()
-        B_A_distances = B_A_distances.sum()
-        # compute result and return
-        return 1. / (mask_surface_size + reference_surface_sice) * (A_B_distances + B_A_distances)
-
-    def get_mask_reference_nn(self):
-        # Note: see note for @see get_reference_mask_nn
-        if None == self.__mask_reference_nn:
-            tree = scipy.spatial.cKDTree(self.get_mask_edge_points())
-            self.__mask_reference_nn, _ = tree.query(self.get_reference_edge_points())
-        return self.__mask_reference_nn
-
-    def get_reference_mask_nn(self):
-        if self.__reference_mask_nn is None:
-            tree = scipy.spatial.cKDTree(self.get_reference_edge_points())
-            self.__reference_mask_nn, _ = tree.query(self.get_mask_edge_points())
-        return self.__reference_mask_nn
-
-    def get_mask_edge_points(self):
-        return self.__mask_edge_points
-
-    def get_reference_edge_points(self):
-        return self.__reference_edge_points
-
-    def compute_contour(self, array):
-        footprint = scipy.ndimage.morphology.generate_binary_structure(array.ndim, self.connectivity)
-        # create an erode version of the array
-        erode_array = scipy.ndimage.morphology.binary_erosion(array, footprint)
-        array = array.astype(bool)
-        # xor the erode_array with the original and return
-        return array ^ erode_array
 
 
 if __name__ == '__main__':

@@ -11,6 +11,7 @@
 * 8.19 添加SegNet支持
 * 8.20 添加PSPNet支持
 * 8.23 添加Using Device，方便调试
+* 8.25 添加IOU，Dice，FP，FN，待测试
 
 # Todo
 * 切片880*880过大，不合理，需要trick
@@ -19,3 +20,16 @@
 * 其他模型
 * 其他Loss函数
 * 其他评价指标
+
+# Need to include
+* number of params
+* evaluate
+    * IOU
+    * Dice
+    * pixel acc
+* model
+    * UNet
+    * FCN
+    * UNet++
+    * PSPNet
+    * DeepLabv3
