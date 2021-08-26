@@ -374,7 +374,6 @@ def train():
                 outputs = torch.sigmoid(outputs)
                 val_loss = criterion(outputs, y)
                 val_iteration += 1
-                writer.add_scalar('Validation/Val_Loss', val_loss.item(), val_iteration)
 
                 # for metrics
                 predict = outputs.clone()
@@ -386,14 +385,15 @@ def train():
 
                 # Log
                 writer.add_scalar('Validation/Val_Loss', val_loss.item(), val_iteration)
-                writer.add_scalar('Validation/IOU', IOU.item(), iteration)
-                writer.add_scalar('Validation/Dice', dice.item(), iteration)
-                writer.add_scalar('Validation/Acc', acc.item(), iteration)
+                writer.add_scalar('Validation/IOU', IOU.item(), val_iteration)
+                writer.add_scalar('Validation/Dice', dice.item(), val_iteration)
+                writer.add_scalar('Validation/Acc', acc.item(), val_iteration)
                 # writer.add_scalar('Training/False_Positive_rate', false_positive_rate.item(), iteration)
                 # writer.add_scalar('Training/False_Negtive_rate', false_negtive_rate.item(), iteration)
 
                 # set tqdm
                 total_loss.append(val_loss.item())
+                total_acc.append(acc.item())
                 loop_val.set_description(f'Valid [{epoch}/{epochs}]')
                 mean_val_loss = sum(total_loss) / len(total_loss)
                 mean_acc = sum(total_acc) / len(total_acc)
