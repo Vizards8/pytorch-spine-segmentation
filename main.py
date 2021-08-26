@@ -213,21 +213,15 @@ def train():
     #                           pin_memory=False,
     #                           drop_last=False)
 
-    model.train()
-
     epochs = args.epochs - elapsed_epochs
     iteration = elapsed_epochs * len(train_loader)
     val_iteration = elapsed_epochs * len(val_loader)
 
     start_time = time.time()
     for epoch in range(1, epochs + 1):
-        # end_time = time.time()
-        # print("epoch:" + str(epoch) + "duration:" + str(end_time - start_time))
-        # start_time = end_time
-
         epoch += elapsed_epochs
 
-        num_iters = 0
+        model.train()
 
         loop_train = tqdm(enumerate(train_loader), total=len(train_loader))
         for i, batch in loop_train:
@@ -245,11 +239,6 @@ def train():
                 x = x.squeeze(4)
                 y = y.squeeze(4)
 
-                # y[y != 0] = 1
-
-            # print(f"Batch: {i}/{len(train_loader)} epoch {epoch}")
-            # print(y.max())
-
             # print('before turn 2 onehot:', np.unique(np.array(y)))
             y = onehot.mask2onehot(y, hp.out_classlist)  # 转成one-hot
             x = torch.FloatTensor(x).to(device)
@@ -259,12 +248,10 @@ def train():
             # from torchsummary import summary
             # print(summary(model, (1, 256, 256)))
 
+            # Loss
             outputs = model(x)
             outputs = torch.sigmoid(outputs)
-
             loss = criterion(outputs, y)
-
-            num_iters += 1
             loss.backward()
 
             optimizer.step()
@@ -276,20 +263,22 @@ def train():
             # print(np.unique(predict))
             predict = onehot.mask2onehot(predict, hp.out_classlist)
             predict = torch.FloatTensor(predict).to(device)  # 转换为torch.tensor才能送进gpu
-            IOU, dice, false_positive_rate, false_negtive_rate, acc = metrics(predict, y, hp.out_class)
+            IOU, dice, acc = metrics(predict, y, hp.out_class)
 
-            ## log
+            # Log
             writer.add_scalar('Training/Loss', loss.item(), iteration)
-            writer.add_scalar('Training/IOU', IOU, iteration)
-            writer.add_scalar('Training/Dice', dice, iteration)
-            writer.add_scalar('Training/Acc', acc, iteration)
-            writer.add_scalar('Training/False_Positive_rate', false_positive_rate, iteration)
-            writer.add_scalar('Training/False_Negtive_rate', false_negtive_rate, iteration)
+            writer.add_scalar('Training/IOU', IOU.item(), iteration)
+            writer.add_scalar('Training/Dice', dice.item(), iteration)
+            writer.add_scalar('Training/Acc', acc.item(), iteration)
+            # writer.add_scalar('Training/False_Positive_rate', false_positive_rate.item(), iteration)
+            # writer.add_scalar('Training/False_Negtive_rate', false_negtive_rate.item(), iteration)
 
+            # Set tqdm
             end_time = time.time()
-            loop_train.set_description(f'Epoch_Train [{epoch}/{epochs}]')
+            loop_train.set_description(f'Train [{epoch}/{epochs}]')
             loop_train.set_postfix({
                 'loss': '{0:1.5f}'.format(loss.item()),
+                'acc': '{0:1.5f}'.format(acc.item()),
                 'duration': '{0:1.5f}'.format(end_time - start_time)
             })
             # print("loss:" + str(loss.item()))
@@ -297,19 +286,19 @@ def train():
 
         scheduler.step()
 
-        # Store latest checkpoint in each epoch
-        torch.save(
-            {
-                "model": model.state_dict(),
-                "optim": optimizer.state_dict(),
-                "scheduler": scheduler.state_dict(),
-                "epoch": epoch,
+        # # Store latest checkpoint in each epoch
+        # torch.save(
+        #     {
+        #         "model": model.state_dict(),
+        #         "optim": optimizer.state_dict(),
+        #         "scheduler": scheduler.state_dict(),
+        #         "epoch": epoch,
+        #
+        #     },
+        #     os.path.join(args.output_dir, args.latest_checkpoint_file),
+        # )
 
-            },
-            os.path.join(args.output_dir, args.latest_checkpoint_file),
-        )
-
-        # Save checkpoint
+        # Save checkpoint and predicted *.nii.gz
         if epoch % args.epochs_per_checkpoint == 0:
 
             torch.save(
@@ -339,7 +328,7 @@ def train():
                 affine = batch['source']['affine'][0].numpy()
 
                 y = onehot.onehot2mask(y)[0]
-                print('turn back from onehot:', np.unique(y))
+                # print('turn back from onehot:', np.unique(y))
                 outputs = onehot.onehot2mask(outputs)[0]
 
                 # x [1,880,880,1]
@@ -356,10 +345,12 @@ def train():
                 output_image.save(os.path.join(args.output_dir, f"step-{epoch:04d}-predict" + hp.save_arch))
 
         # Validation per epoch
+        model.eval()
         with torch.no_grad():
-            # print('Validation............')
             loop_val = tqdm(enumerate(val_loader), total=len(val_loader))
             total_loss = []
+            total_acc = []
+
             for i, batch in loop_val:
                 # print(f"Batch: {i}/{len(val_loader)} epoch {epoch}")
 
@@ -378,25 +369,42 @@ def train():
                 y = torch.FloatTensor(y).to(device)
                 # y [BS,18,880,880]
 
+                # Loss
                 outputs = model(x)
                 outputs = torch.sigmoid(outputs)
                 val_loss = criterion(outputs, y)
                 val_iteration += 1
                 writer.add_scalar('Validation/Val_Loss', val_loss.item(), val_iteration)
 
-                # print("val_loss:" + str(val_loss.item()))
+                # for metrics
+                predict = outputs.clone()
+                predict = onehot.onehot2mask(predict.cpu().detach().numpy())
+                # print(np.unique(predict))
+                predict = onehot.mask2onehot(predict, hp.out_classlist)
+                predict = torch.FloatTensor(predict).to(device)  # 转换为torch.tensor才能送进gpu
+                IOU, dice, acc = metrics(predict, y, hp.out_class)
+
+                # Log
+                writer.add_scalar('Validation/Val_Loss', val_loss.item(), val_iteration)
+                writer.add_scalar('Validation/IOU', IOU.item(), iteration)
+                writer.add_scalar('Validation/Dice', dice.item(), iteration)
+                writer.add_scalar('Validation/Acc', acc.item(), iteration)
+                # writer.add_scalar('Training/False_Positive_rate', false_positive_rate.item(), iteration)
+                # writer.add_scalar('Training/False_Negtive_rate', false_negtive_rate.item(), iteration)
+
+                # set tqdm
                 total_loss.append(val_loss.item())
-                loop_val.set_description(f'Epoch_Valid [{epoch}/{epochs}]')
-                mean_val_loss = np.mean(np.array(total_loss))
+                loop_val.set_description(f'Valid [{epoch}/{epochs}]')
+                mean_val_loss = sum(total_loss) / len(total_loss)
+                mean_acc = sum(total_acc) / len(total_acc)
                 end_time = time.time()
                 loop_val.set_postfix({
-                    'loss': '{0:1.5f}'.format(val_loss.item()),
-                    'loss_mean': '{0:1.5f}'.format(mean_val_loss),
+                    'm_loss': '{0:1.5f}'.format(mean_val_loss),
+                    'm_acc': '{0:1.5f}'.format(mean_acc),
                     'duration': '{0:1.5f}'.format(end_time - start_time)
                 })
 
-            # print("mean_val_loss:" + str(np.mean(np.array(total_loss))))
-
+            # Save predicted *.nii.gz
             if epoch % args.epochs_per_checkpoint == 0:
                 # x [BS,1,880,880]
                 # y [BS,18,880,880]
@@ -430,7 +438,7 @@ def train():
                 output_image = torchio.ScalarImage(tensor=outputs, affine=affine)
                 output_image.save(os.path.join(args.output_dir, f"val-step-{epoch:04d}-predict" + hp.save_arch))
 
-        # 重置计时器
+        # Reset timer
         end_time = time.time()
         start_time = end_time
 

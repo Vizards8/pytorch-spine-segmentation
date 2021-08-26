@@ -32,14 +32,14 @@ def metrics(predict, label, out_class):
         if indice:
             Dice_list.append(diceCoeffv2(predict[indice, i, :, :], label[indice, i, :, :]))
             IOU_list.append(IOU(predict[indice, i, :, :], label[indice, i, :, :]))
-            FP_FN_rate_list = FP_FN_rate(predict[indice, i, :, :], label[indice, i, :, :])
-            false_positive_rate_list.append(FP_FN_rate_list[0])
-            false_negtive_rate_list.append(FP_FN_rate_list[1])
-            accu = pixel_accuracy(predict[indice, i, :, :], label[indice, i, :, :])
+            # FP_FN_rate_list = FP_FN_rate(predict[indice, i, :, :], label[indice, i, :, :])
+            # false_positive_rate_list.append(FP_FN_rate_list[0])
+            # false_negtive_rate_list.append(FP_FN_rate_list[1])
+            # accu = pixel_accuracy(predict[indice, i, :, :], label[indice, i, :, :])
             # if accu > 0.9:
             #     print(f'slice id:{i}, acc:{accu}')
-            acc.append(accu)
-    return mean(IOU_list), mean(Dice_list), mean(false_positive_rate_list), mean(false_negtive_rate_list), mean(acc)
+            acc.append(pixel_accuracy(predict[indice, i, :, :], label[indice, i, :, :]))
+    return mean(IOU_list), mean(Dice_list), mean(acc)
 
 
 def mean(list):

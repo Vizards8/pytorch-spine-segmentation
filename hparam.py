@@ -8,9 +8,9 @@ class hparams:
     total_epochs = 200
     epochs_per_checkpoint = 10
     batch_size = 1
-    ckpt = None  # 用来断点继续训练
-    val_split = 0.2  # 验证集/数据集总数
-    test_split = 0.0  # 这次不训练的/数据集总数，剩下的就是训练集的个数
+    ckpt = None  # 用来断点继续训练，例如：'checkpoint_100.pt'
+    val_split = 0.05  # 验证集/数据集总数
+    test_split = 0.75  # 这次不训练的/数据集总数，剩下的就是训练集的个数
     init_lr = 0.002
     scheduer_step_size = 20
     scheduer_gamma = 0.8
