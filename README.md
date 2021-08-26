@@ -25,7 +25,7 @@
 ```
 pytorch-spine-segmentation
 ├── dataset
-    ├── train
+    └── train
         ├── source
         │   ├── Case1.nii.gz
         │   ├── Case2.nii.gz
