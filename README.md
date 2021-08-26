@@ -1,155 +1,104 @@
-# Pytorch Medical Segmentation
-<i>Read Chinese Introduction：<a href='https://github.com/MontaEllis/Pytorch-Medical-Segmentation/blob/master/README-zh.md'>Here！</a></i><br />
-
-## Recent Updates
-* 2021.1.8 The train and test codes are released.
-* 2021.2.6 A bug in dice was fixed with the help of [Shanshan Li](https://github.com/ssli23).
-* 2021.2.24 A video tutorial was released(https://www.bilibili.com/video/BV1gp4y1H7kq/).
-* 2021.5.16 A bug in Unet3D implement was fixed.
-* 2021.5.16 The metric code is released.
-* 2021.6.24 All parameters can be adjusted in hparam.py.
-* 2021.7.7 Now you can refer medical classification in [Pytorch-Medical-Classification](https://github.com/MontaEllis/Pytorch-Medical-Classification)
-
-## Requirements
-* pytorch1.7
-* torchio<=0.18.20
-* python>=3.6
-
-## Notice
-* You can modify **hparam.py** to determine whether 2D or 3D segmentation and whether multicategorization is possible.
-* We provide algorithms for almost all 2D and 3D segmentation.
-* This repository is compatible with almost all medical data formats(e.g. nii.gz, nii, mhd, nrrd, ...), by modifying **fold_arch** in **hparam.py** of the config. **I would like you to convert both the source and label images to the same type before using them, where labels are marked with 1, not 255.**
-* If you want to use a **multi-category** program, please modify the corresponding codes by yourself. I cannot identify your specific categories.
-* Whether in 2D or 3D, this project is processed using **patch**. Therefore, images do not have to be strictly the same size. In 2D, however, you should set the patch large enough.
-
-## Prepare Your Dataset
-### Example1
-if your source dataset is :
-```
-source_dataset
-├── source_1.mhd
-├── source_1.zraw
-├── source_2.mhd
-├── source_2.zraw
-├── source_3.mhd
-├── source_3.zraw
-├── source_4.mhd
-├── source_4.zraw
-└── ...
-```
-
-and your label dataset is :
-```
-label_dataset
-├── label_1.mhd
-├── label_1.zraw
-├── label_2.mhd
-├── label_2.zraw
-├── label_3.mhd
-├── label_3.zraw
-├── label_4.mhd
-├── label_4.zraw
-└── ...
-```
-
-then your should modify **fold_arch** as **\*.mhd**, **source_train_dir** as **source_dataset** and **label_train_dir** as **label_dataset** in **hparam.py**
-
-### Example2
-if your source dataset is :
-```
-source_dataset
-├── 1
-    ├── source_1.mhd
-    ├── source_1.zraw
-├── 2
-    ├── source_2.mhd
-    ├── source_2.zraw
-├── 3
-    ├── source_3.mhd
-    ├── source_3.zraw
-├── 4
-    ├── source_4.mhd
-    ├── source_4.zraw
-└── ...
-```
-
-and your label dataset is :
-```
-label_dataset
-├── 1
-    ├── label_1.mhd
-    ├── label_1.zraw
-├── 2
-    ├── label_2.mhd
-    ├── label_2.zraw
-├── 3
-    ├── label_3.mhd
-    ├── label_3.zraw
-├── 4
-    ├── label_4.mhd
-    ├── label_4.zraw
-└── ...
-```
-
-then your should modify **fold_arch** as **\*/\*.mhd**, **source_train_dir** as **source_dataset** and **label_train_dir** as **label_dataset** in **hparam.py**
+# MIT summer project 2021
 
 
-## Training
-* without pretrained-model
+* [环境要求](#环境要求)
+* [如何运行](#如何运行)
+    * [准备数据](#准备数据)
+    * [调整超参](#调整超参)
+    * [训练模型](#训练模型)
+* [Logs](#Logs)
+* [Todo](#Todo)
+* [写论文需要的内容](#写论文需要的内容)
+
+
+## 环境要求
+* pytorch 1.7
+* torchio <= 0.18.20
+* python >= 3.6
+
+
+## 如何运行
+### 准备数据
+* 将老师给的 *mit_ai_2021_course_2_project_1_dataset_train_1* 和 *mit_ai_2021_course_2_project_1_dataset_train_2* 合并
+* 不使用 *mit_ai_2021_course_2_project_1_dataset_test* 中的数据，因为没有标签
+* 将数据如下排列：务必检查好source200，label200，共计400个文件
 ```
-set hparam.train_or_test to 'train'
-python main.py
+pytorch-spine-segmentation
+├── dataset
+    ├── train
+        ├── source
+        │   ├── Case1.nii.gz
+        │   ├── Case2.nii.gz
+        │   ├── ...
+        │   └── Case200.nii.gz
+        └── label
+            ├── mask_case1.nii.gz
+            ├── mask_case2.nii.gz
+            ├── ...
+            └── mask_case200.nii.gz
 ```
-* with pretrained-model
+
+### 调整超参
+* 如有必要，详见hparam.py
+
+### 安装环境
+* 如在服务器上运行，须执行额外包安装:
+```bash
+pip install torchio
+pip install tensorboard
 ```
-set hparam.train_or_test to 'train'
-python main.py -k True
+
+### 前处理
+```bash
+python preprocess.py
 ```
-  
-## Inference
-* testing
-```
-set hparam.train_or_test to 'test'
+
+### 训练模型
+```bash
 python main.py
 ```
 
-## Examples
-![](https://ellis.oss-cn-beijing.aliyuncs.com/img/20210108185333.png)
-![](https://ellis.oss-cn-beijing.aliyuncs.com/img/2021-02-06%2022-40-07%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png)
+### 查看效果
+* 在terminal输入以下内容，并点击网址:
+```bash
+tensorboard --logdir logs
+```
 
-## Tutorials
-* https://www.bilibili.com/video/BV1gp4y1H7kq/
+## Logs
+* 8.14 多分类标签问题调整完毕，现输出18分类，效果还行
+* 8.15 添加validation
+* 8.16 尝试colab，但是爆内存，修改切片大小为660*660，能跑，但是gpu限额
+* 8.17 添加读数据进度条
+* 8.17 添加test_split参数，可调整每次读取的数据量，不必删数据集
+* 8.17 添加跑代码过程中的进度条，优化可读性
+* 8.18 添加use_queue参数，可将一张原图切成多张小图读取
+* 8.18 修改test
+* 8.18 添加postprocess，组合为三维MRI
+* 8.19 添加SegNet支持
+* 8.20 添加PSPNet支持
+* 8.23 添加Using Device，方便调试
+* 8.25 添加IOU，Dice，FP，FN，待测试
 
-## Done
-### Network
-* 2D
-- [x] unet
-- [x] unet++
-- [x] miniseg
-- [x] segnet
-- [x] pspnet
-- [x] highresnet(copy from https://github.com/fepegar/highresnet, Thank you to [fepegar](https://github.com/fepegar) for your generosity!)
-- [x] deeplab
-- [x] fcn
-* 3D
-- [x] unet3d
-- [x] residual-unet3d
-- [x] densevoxelnet3d
-- [x] fcn3d
-- [x] vnet3d
-- [x] highresnert(copy from https://github.com/fepegar/highresnet, Thank you to [fepegar](https://github.com/fepegar) for your generosity!)
-- [x] densenet3d
 
-### Metric
-- [x] metrics.py to evaluate your results
+## Todo
+- [ ] 切片880*880过大，不合理，需要trick
+- [x] 边缘切片没有18个分类，效果肯定不好，是否影响整体模型 *仍然放进去训练*
+- [x] RandomElasticDeformation()会报warning，*为了观感,暂时去除*
+- [x] 其他模型
+- [ ] 其他Loss函数
+- [x] 其他评价指标
+- [x] 有的切片没有18个分类，导致one-hot存在全0tensor，tp = 0, fn = 0, 所以正确率虚高 *已去除*
 
-## TODO
-- [ ] dataset
-- [ ] benchmark
-- [ ] nnunet
 
-## By The Way
-This project is not perfect and there are still many problems. If you are using this project and would like to give the author some feedbacks, you can send [Kangneng Zhou](elliszkn@163.com) an email, his **wechat** number is: ellisgege666
-
-## Acknowledgements
-This repository is an unoffical PyTorch implementation of Medical segmentation in 3D and 2D and highly based on [MedicalZooPytorch](https://github.com/black0017/MedicalZooPytorch) and [torchio](https://github.com/fepegar/torchio).Thank you for the above repo. Thank you to [Cheng Chen](b20170310@xs.ustb.edu.cn), [Daiheng Gao](https://github.com/tomguluson92), [Jie Zhang](jpeter.zhang@connect.polyu.hk), [Xing Tao](kakatao@foxmail.com), [Weili Jiang](1379252229@qq.com) and [Shanshan Li](https://github.com/ssli23) for all the help I received.
+## 写论文需要的内容
+* number of params
+* evaluate
+    * IOU
+    * Dice
+    * pixel acc
+* model
+    * UNet
+    * FCN
+    * UNet++
+    * PSPNet
+    * DeepLabv3
