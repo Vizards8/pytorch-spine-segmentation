@@ -382,7 +382,7 @@ def train():
                 outputs = torch.sigmoid(outputs)
                 val_loss = criterion(outputs, y)
                 val_iteration += 1
-                writer.add_scalar('Training/Val_Loss', val_loss.item(), val_iteration)
+                writer.add_scalar('Validation/Val_Loss', val_loss.item(), val_iteration)
 
                 # print("val_loss:" + str(val_loss.item()))
                 total_loss.append(val_loss.item())

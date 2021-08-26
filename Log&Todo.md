@@ -20,6 +20,7 @@
 * 其他模型
 * 其他Loss函数
 * 其他评价指标
+* 有的切片没有18个分类，导致one-hot存在全0tensor，tp = 0, fn = 0, 正确率虚高
 
 # Need to include
 * number of params

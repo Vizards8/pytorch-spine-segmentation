@@ -21,13 +21,24 @@ def metrics(predict, label, out_class):
     false_negtive_rate_list = []
     acc = []
     for i in range(1, out_class):
-        Dice_list.append(diceCoeffv2(predict[:, i:i + 1, :, :], label[:, i:i + 1, :, :]))
-        IOU_list.append(IOU(predict[:, i:i + 1, :, :], label[:, i:i + 1, :, :]))
-        FP_FN_rate_list = FP_FN_rate(predict[:, i:i + 1, :, :], label[:, i:i + 1, :, :])
-        false_positive_rate_list.append(FP_FN_rate_list[0])
-        false_negtive_rate_list.append(FP_FN_rate_list[1])
-    for i in range(out_class):
-        acc.append(accuracy(predict[:, i:i + 1, :, :], label[:, i:i + 1, :, :]))
+        N = label.size(0)
+        indice = []
+        # 根据batch_size筛去全0label，有标签才计算评价指标
+        for j in range(N):
+            gt_true = torch.sum(label[j, i, :, :])
+            if gt_true:
+                indice.append(j)
+
+        if indice:
+            Dice_list.append(diceCoeffv2(predict[indice, i, :, :], label[indice, i, :, :]))
+            IOU_list.append(IOU(predict[indice, i, :, :], label[indice, i, :, :]))
+            FP_FN_rate_list = FP_FN_rate(predict[indice, i, :, :], label[indice, i, :, :])
+            false_positive_rate_list.append(FP_FN_rate_list[0])
+            false_negtive_rate_list.append(FP_FN_rate_list[1])
+            accu = pixel_accuracy(predict[indice, i, :, :], label[indice, i, :, :])
+            # if accu > 0.9:
+            #     print(f'slice id:{i}, acc:{accu}')
+            acc.append(accu)
     return mean(IOU_list), mean(Dice_list), mean(false_positive_rate_list), mean(false_negtive_rate_list), mean(acc)
 
 
@@ -76,18 +87,6 @@ def batch_intersection_union(predict, target, nclass):
     assert (area_inter <= area_union).all(), \
         "Intersection area should be smaller than Union area"
     return area_inter, area_union
-
-
-def pixel_accuracy(im_pred, im_lab):
-    im_pred = np.asarray(im_pred)
-    im_lab = np.asarray(im_lab)
-
-    # Remove classes from unlabeled pixels in gt image.
-    # We should not penalize detections in unlabeled portions of the image.
-    pixel_labeled = np.sum(im_lab > 0)
-    pixel_correct = np.sum((im_pred == im_lab) * (im_lab > 0))
-    # pixel_accuracy = 1.0 * pixel_correct / pixel_labeled
-    return pixel_correct, pixel_labeled
 
 
 def intersection_and_union(im_pred, im_lab, num_class):
@@ -269,7 +268,6 @@ def accuracy(pred, gt, eps=1e-5):
     fn = torch.sum((pred_flat == 0) * (gt_flat != 0), dim=1)
 
     score = ((tp + tn).float() + eps) / ((tp + fp + tn + fn).float() + eps)
-
     return score.sum() / N
 
 
@@ -287,16 +285,18 @@ def precision(pred, gt, eps=1e-5):
     return score.sum() / N
 
 
-def sensitivity(pred, gt, eps=1e-5):
+def pixel_accuracy(pred, gt, eps=1e-5):
     """TP / (TP + FN)"""
     N = gt.size(0)
     pred_flat = pred.view(N, -1)
     gt_flat = gt.view(N, -1)
-    tp = torch.sum((pred_flat != 0) * (gt_flat != 0))
-    fn = torch.sum((pred_flat == 0) * (gt_flat != 0))
+    tp = torch.sum((pred_flat != 0) * (gt_flat != 0), dim=1)
+    fn = torch.sum((pred_flat == 0) * (gt_flat != 0), dim=1)
 
     score = (tp.float() + eps) / ((tp + fn).float() + eps)
-
+    # if score > 0.9:
+    #     print(f'gt_1:{torch.sum(gt_flat, dim=1).item()}, pred_1:{torch.sum(pred_flat, dim=1).item()}')
+    #     print(f'tp:{tp.item()}, fn:{fn.item()}')
     return score.sum() / N
 
 
