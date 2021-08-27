@@ -149,6 +149,7 @@ def diceCoeffv2(pred, gt, eps=1e-5):
 
 def IOU(pred, gt, eps=1e-5):
     r""" computational formula：
+        IOU = pred ∩ gt / pred ∪ gt
         IOU = tp / (tp + fp + fn)
     """
 
