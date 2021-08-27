@@ -19,8 +19,8 @@
 
 ## 如何运行
 ### 准备数据
-* 将老师给的 *mit_ai_2021_course_2_project_1_dataset_train_1* 和 *mit_ai_2021_course_2_project_1_dataset_train_2* 合并
-* 不使用 *mit_ai_2021_course_2_project_1_dataset_test* 中的数据，因为没有标签
+* 将老师给的`mit_ai_2021_course_2_project_1_dataset_train_1`和`mit_ai_2021_course_2_project_1_dataset_train_2`合并
+* 不使用`mit_ai_2021_course_2_project_1_dataset_test`中的数据，因为没有标签
 * 将数据如下排列：务必检查好source200，label200，共计400个文件
 ```
 pytorch-spine-segmentation
@@ -80,6 +80,7 @@ tensorboard --logdir logs
 * 8.25 添加IOU，Dice，FP，FN，待测试
 * 8.27 测试GPU服务器性能，综合考虑，优选3090
 * 8.27 搞半天label是0-19，20分类¿我TM
+* 8.27 use_queue,sampler任然存在问题，but因为用不到，所以不改了
 
 ## Todo
 - [ ] 切片880*880过大，不合理，需要trick

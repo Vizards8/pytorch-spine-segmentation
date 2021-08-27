@@ -6,11 +6,11 @@ class hparams:
     latest_checkpoint_file = 'checkpoint_latest.pt'
     # total_epochs = 5000000
     total_epochs = 200
-    epochs_per_checkpoint = 10
+    epochs_per_checkpoint = 1
     batch_size = 1
     ckpt = None  # 用来断点继续训练，例如：'checkpoint_100.pt'
-    val_split = 0.2  # 验证集/数据集总数
-    test_split = 0  # 测试集/数据集总数，不参与训练用来测试
+    val_split = 0.05  # 验证集/数据集总数
+    test_split = 0.75  # 测试集/数据集总数，不参与训练用来测试
     # 剩下的就是训练集的个数
     init_lr = 0.002
     scheduer_step_size = 20
