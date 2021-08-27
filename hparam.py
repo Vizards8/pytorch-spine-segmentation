@@ -1,18 +1,19 @@
 class hparams:
+    gpu_nums = 1
     train_or_test = 'train'  # 'train' or 'test'
     output_dir = 'logs'
     inference_dir = 'results'
     aug = True
-    latest_checkpoint_file = 'checkpoint_0010.pt'
+    latest_checkpoint_file = 'checkpoint_0200.pt'
     # total_epochs = 5000000
-    total_epochs = 200
-    epochs_per_checkpoint = 1
+    total_epochs = 300
+    epochs_per_checkpoint = 50
     batch_size = 1
     ckpt = None  # 用来断点继续训练，例如:'checkpoint_100.pt'
-    val_split = 0.2  # 验证集/数据集总数，一般训练集:验证集 = 4:1
-    unused_split = 0.0  # 不加载的数据/数据集总数，若train_or_test = 'train' 则此次不加载
+    val_split = 0.05  # 验证集/数据集总数，一般训练集:验证集 = 4:1
+    unused_split = 0.75  # 不加载的数据/数据集总数，若train_or_test = 'train' 则此次不加载
     # 剩下的就是训练集的个数
-    init_lr = 0.002
+    init_lr = 0.005
     scheduer_step_size = 20
     scheduer_gamma = 0.8
     debug = False

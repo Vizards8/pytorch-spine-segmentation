@@ -18,7 +18,7 @@ def metrics(predict, label, out_class):
     IOU_list = []
     Dice_list = []
     false_positive_rate_list = []
-    false_negtive_rate_list = []
+    false_negative_rate_list = []
     acc = []
     for i in range(1, out_class):
         N = label.size(0)
@@ -32,18 +32,20 @@ def metrics(predict, label, out_class):
         if indice:
             Dice_list.append(diceCoeffv2(predict[indice, i, :, :], label[indice, i, :, :]))
             IOU_list.append(IOU(predict[indice, i, :, :], label[indice, i, :, :]))
-            # FP_FN_rate_list = FP_FN_rate(predict[indice, i, :, :], label[indice, i, :, :])
-            # false_positive_rate_list.append(FP_FN_rate_list[0])
-            # false_negtive_rate_list.append(FP_FN_rate_list[1])
+            FP_FN_rate_list = FP_FN_rate(predict[indice, i, :, :], label[indice, i, :, :])
+            false_positive_rate_list.append(FP_FN_rate_list[0])
+            false_negative_rate_list.append(FP_FN_rate_list[1])
             # accu = pixel_accuracy(predict[indice, i, :, :], label[indice, i, :, :])
             # if accu > 0.9:
             #     print(f'slice id:{i}, acc:{accu}')
             acc.append(pixel_accuracy(predict[indice, i, :, :], label[indice, i, :, :]))
-    return mean(IOU_list), mean(Dice_list), mean(acc)
+    return mean(IOU_list), mean(Dice_list), mean(acc), mean(false_positive_rate_list), mean(false_negative_rate_list)
 
 
 def mean(list):
     """计算平均值"""
+    if not len(list):
+        return 0
     return sum(list) / len(list)
 
 
@@ -291,6 +293,7 @@ def pixel_accuracy(pred, gt, eps=1e-5):
     N = gt.size(0)
     pred_flat = pred.view(N, -1)
     gt_flat = gt.view(N, -1)
+
     tp = torch.sum((pred_flat != 0) * (gt_flat != 0), dim=1)
     fn = torch.sum((pred_flat == 0) * (gt_flat != 0), dim=1)
 

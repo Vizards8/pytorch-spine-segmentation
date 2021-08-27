@@ -214,24 +214,3 @@ class MedData_train(torch.utils.data.Dataset):
             raise Exception('no such kind of mode!')
 
         return training_transform
-
-
-class MedData_test(torch.utils.data.Dataset):
-    def __init__(self, images_dir, labels_dir):
-        self.subjects = []
-
-        images_dir = Path(images_dir)
-        self.image_paths = sorted(images_dir.glob(hp.fold_arch))
-        labels_dir = Path(labels_dir)
-        self.label_paths = sorted(labels_dir.glob(hp.fold_arch))
-
-        for (image_path, label_path) in zip(self.image_paths, self.label_paths):
-            subject = tio.Subject(
-                source=tio.ScalarImage(image_path),
-                label=tio.LabelMap(label_path),
-            )
-            self.subjects.append(subject)
-
-        # self.transforms = self.transform()
-
-        self.test_dataset = tio.SubjectsDataset(self.subjects, transform=None)

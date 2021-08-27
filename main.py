@@ -1,29 +1,25 @@
 import os
+from hparam import hparams as hp
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-devicess = [0]
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+devices = [i for i in range(hp.gpu_nums)]
 
 import time
 import argparse
 import numpy as np
-from PIL import Image
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torch import nn
-from torchvision import transforms
-import torch.distributed as dist
-import math
 import torchio
 from torchio.transforms import (
     ZNormalization,
 )
 from tqdm import tqdm
-from torchvision import utils
-from hparam import hparams as hp
 from utils.metrics import *
 from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR, CosineAnnealingLR
 import onehot
+from data_function import MedData_train
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -38,8 +34,9 @@ def parse_training_args(parser):
     """
     Parse commandline arguments.
     """
+    device_name = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
     if torch.cuda.is_available():
-        print(f'Using Device:{device}, {torch.cuda.get_device_name(0)}')
+        print(f'Using Device:{device} {device_name}')
     else:
         print(f'Using Device:{device}')
 
@@ -87,18 +84,17 @@ def train():
     torch.backends.cudnn.enabled = args.cudnn_enabled
     torch.backends.cudnn.benchmark = args.cudnn_benchmark
 
-    from data_function import MedData_train
     os.makedirs(args.output_dir, exist_ok=True)
 
     if hp.mode == '2d':
         # from models.two_d.segnet2 import SegNet
         # model = SegNet(n_init_features=hp.in_class, num_classes=hp.out_class)
 
-        # from models.two_d.unet import Unet
-        # model = Unet(in_channels=hp.in_class, classes=hp.out_class)
+        from models.two_d.unet import Unet
+        model = Unet(in_channels=hp.in_class, classes=hp.out_class)
 
-        from models.two_d.miniseg import MiniSeg
-        model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
+        # from models.two_d.miniseg import MiniSeg
+        # model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
 
         # from models.two_d.pspnet import PSPNet
         # model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
@@ -151,7 +147,7 @@ def train():
         # from models.three_d.vnet3d import VNet
         # model = VNet(in_channels=hp.in_class, classes=hp.out_class)
 
-    model = torch.nn.DataParallel(model, device_ids=devicess)
+    model = torch.nn.DataParallel(model, device_ids=devices)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.init_lr)
 
     # scheduler = ReduceLROnPlateau(optimizer, 'min',factor=0.5, patience=20, verbose=True)
@@ -223,6 +219,8 @@ def train():
     start_time = time.time()
     for epoch in range(1, epochs + 1):
         epoch += elapsed_epochs
+        total_train_loss = []
+        total_train_IOU = []
 
         model.train()
 
@@ -266,18 +264,20 @@ def train():
             # print(np.unique(predict))
             predict = onehot.mask2onehot(predict, hp.out_classlist)
             predict = torch.FloatTensor(predict).to(device)  # 转换为torch.tensor才能送进gpu
-            IOU, dice, acc = metrics(predict, y, hp.out_class)
+            IOU, dice, acc, false_positive_rate, false_negative_rate = metrics(predict, y, hp.out_class)
 
             # Log
             writer.add_scalar('Training/Loss', loss.item(), iteration)
             writer.add_scalar('Training/IOU', IOU.item(), iteration)
             writer.add_scalar('Training/Dice', dice.item(), iteration)
             writer.add_scalar('Training/Acc', acc.item(), iteration)
-            # writer.add_scalar('Training/False_Positive_rate', false_positive_rate.item(), iteration)
-            # writer.add_scalar('Training/False_Negtive_rate', false_negtive_rate.item(), iteration)
+            writer.add_scalar('Training/False_Positive_rate', false_positive_rate.item(), iteration)
+            writer.add_scalar('Training/False_Negative_rate', false_negative_rate.item(), iteration)
 
             # Set tqdm
             end_time = time.time()
+            total_train_loss.append(loss)
+            total_train_IOU.append(IOU)
             loop_train.set_description(f'Train [{epoch}/{epochs}]')
             loop_train.set_postfix({
                 'loss': '{0:1.5f}'.format(loss.item()),
@@ -351,8 +351,9 @@ def train():
         model.eval()
         with torch.no_grad():
             loop_val = tqdm(enumerate(val_loader), total=len(val_loader))
-            total_loss = []
-            total_acc = []
+            total_valid_loss = []
+            total_valid_acc = []
+            total_valid_IOU = []
 
             for i, batch in loop_val:
                 # print(f"Batch: {i}/{len(val_loader)} epoch {epoch}")
@@ -384,26 +385,25 @@ def train():
                 # print(np.unique(predict))
                 predict = onehot.mask2onehot(predict, hp.out_classlist)
                 predict = torch.FloatTensor(predict).to(device)  # 转换为torch.tensor才能送进gpu
-                IOU, dice, acc = metrics(predict, y, hp.out_class)
+                IOU, dice, acc, false_positive_rate, false_negative_rate = metrics(predict, y, hp.out_class)
 
                 # Log
                 writer.add_scalar('Validation/Val_Loss', val_loss.item(), val_iteration)
                 writer.add_scalar('Validation/IOU', IOU.item(), val_iteration)
                 writer.add_scalar('Validation/Dice', dice.item(), val_iteration)
                 writer.add_scalar('Validation/Acc', acc.item(), val_iteration)
-                # writer.add_scalar('Training/False_Positive_rate', false_positive_rate.item(), iteration)
-                # writer.add_scalar('Training/False_Negtive_rate', false_negtive_rate.item(), iteration)
+                writer.add_scalar('Validation/False_Positive_rate', false_positive_rate.item(), val_iteration)
+                writer.add_scalar('Validation/False_Negative_rate', false_negative_rate.item(), val_iteration)
 
                 # set tqdm
-                total_loss.append(val_loss.item())
-                total_acc.append(acc.item())
+                total_valid_loss.append(val_loss.item())
+                total_valid_acc.append(acc.item())
+                total_valid_IOU.append(IOU.item())
                 loop_val.set_description(f'Valid [{epoch}/{epochs}]')
-                mean_val_loss = sum(total_loss) / len(total_loss)
-                mean_acc = sum(total_acc) / len(total_acc)
                 end_time = time.time()
                 loop_val.set_postfix({
-                    'm_loss': '{0:1.5f}'.format(mean_val_loss),
-                    'm_acc': '{0:1.5f}'.format(mean_acc),
+                    'm_loss': '{0:1.5f}'.format(mean(total_valid_loss)),
+                    'm_acc': '{0:1.5f}'.format(mean(total_valid_acc)),
                     'duration': '{0:1.5f}'.format(end_time - start_time)
                 })
 
@@ -445,6 +445,12 @@ def train():
         end_time = time.time()
         start_time = end_time
 
+    # log compare train and validation
+    writer.add_scalars('Compare/Loss', {'train_loss': '{0:1.5f}'.format(mean(total_train_loss)),
+                                        'valid_train': '{0:1.5f}'.format(mean(total_valid_loss))}, epoch)
+    writer.add_scalars('Compare/IOU', {'train_IOU': '{0:1.5f}'.format(mean(total_train_IOU)),
+                                       'valid_IOU': '{0:1.5f}'.format(mean(total_valid_IOU))}, epoch)
+
     writer.close()
 
 
@@ -458,8 +464,6 @@ def test():
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.enabled = args.cudnn_enabled
     torch.backends.cudnn.benchmark = args.cudnn_benchmark
-
-    from data_function import MedData_test
 
     os.makedirs(hp.inference_dir, exist_ok=True)
 
@@ -504,7 +508,7 @@ def test():
         # from models.three_d.vnet3d import VNet
         # model = VNet(in_channels=hp.in_class, classes=hp.out_class)
 
-    model = torch.nn.DataParallel(model, device_ids=devicess, output_device=[1])
+    model = torch.nn.DataParallel(model, device_ids=devices, output_device=[1])
 
     print("load model:", args.ckpt)
     print(os.path.join(args.output_dir, args.latest_checkpoint_file))
@@ -644,5 +648,5 @@ if __name__ == '__main__':
 
     if hp.train_or_test == 'train':
         train()
-    elif hp.train_or_test == 'test':
+        # elif hp.train_or_test == 'test':
         test()
