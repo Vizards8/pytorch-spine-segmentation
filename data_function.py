@@ -116,12 +116,12 @@ class MedData_train(torch.utils.data.Dataset):
                 label=tio.LabelMap(i['label']),
             )
             torch.round(subject['label']['data'], out=subject['label']['data'])  # 处理为int
-
-            if not np.all(np.equal(subject['source']['affine'], subject['label']['affine'])):
-                print("ERROR Handling:Affine not equal!" + i['source'].name)
-            else:
-                subjects.append(subject)
-
+            # compare = np.equal(subject['source']['affine'], subject['label']['affine'])
+            # if not np.all(compare):
+            #     print("Warning: Affine not equal!" + i['source'].name)
+            # else:
+            #     subjects.append(subject)
+            subjects.append(subject)
         subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
 
         if hp.use_queue:

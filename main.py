@@ -38,7 +38,10 @@ def parse_training_args(parser):
     """
     Parse commandline arguments.
     """
-    print('Using Device: ', device)
+    if torch.cuda.is_available():
+        print(f'Using Device:{device}, {torch.cuda.get_device_name(0)}')
+    else:
+        print(f'Using Device:{device}')
 
     parser.add_argument('-o', '--output_dir', type=str, default=hp.output_dir, required=False,
                         help='Directory to save checkpoints')
@@ -91,11 +94,11 @@ def train():
         # from models.two_d.segnet2 import SegNet
         # model = SegNet(n_init_features=hp.in_class, num_classes=hp.out_class)
 
-        from models.two_d.unet import Unet
-        model = Unet(in_channels=hp.in_class, classes=hp.out_class)
+        # from models.two_d.unet import Unet
+        # model = Unet(in_channels=hp.in_class, classes=hp.out_class)
 
-        # from models.two_d.miniseg import MiniSeg
-        # model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
+        from models.two_d.miniseg import MiniSeg
+        model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
 
         # from models.two_d.pspnet import PSPNet
         # model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
