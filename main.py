@@ -36,7 +36,7 @@ def parse_training_args(parser):
     """
     device_name = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
     if torch.cuda.is_available():
-        print(f'Using Device:{device} {device_name}')
+        print(f'Using Device: {torch.cuda.device_count()} GPU {device_name}')
     else:
         print(f'Using Device:{device}')
 
