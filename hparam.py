@@ -1,16 +1,16 @@
 class hparams:
-    train_or_test = 'train'
+    train_or_test = 'train'  # 'train' or 'test'
     output_dir = 'logs'
     inference_dir = 'results'
     aug = True
-    latest_checkpoint_file = 'checkpoint_latest.pt'
+    latest_checkpoint_file = 'checkpoint_0010.pt'
     # total_epochs = 5000000
     total_epochs = 200
     epochs_per_checkpoint = 1
     batch_size = 1
-    ckpt = None  # 用来断点继续训练，例如：'checkpoint_100.pt'
-    val_split = 0.05  # 验证集/数据集总数
-    test_split = 0.75  # 测试集/数据集总数，不参与训练用来测试
+    ckpt = None  # 用来断点继续训练，例如:'checkpoint_100.pt'
+    val_split = 0.2  # 验证集/数据集总数，一般训练集:验证集 = 4:1
+    unused_split = 0.0  # 不加载的数据/数据集总数，若train_or_test = 'train' 则此次不加载
     # 剩下的就是训练集的个数
     init_lr = 0.002
     scheduer_step_size = 20

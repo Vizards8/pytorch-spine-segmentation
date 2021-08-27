@@ -46,7 +46,7 @@ class MedData_train(torch.utils.data.Dataset):
         self.label_paths = sorted(labels_dir.glob(hp.fold_arch))
 
         val_size = int(hp.val_split * len(self.image_paths))
-        test_size = int(hp.test_split * len(self.image_paths))
+        test_size = int(hp.unused_split * len(self.image_paths))
         train_size = len(self.image_paths) - val_size - test_size
 
         self.subjects_paths = []  # dict打包路径，用于split

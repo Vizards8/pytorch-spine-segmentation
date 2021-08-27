@@ -516,13 +516,21 @@ def test():
 
     model.to(device)
 
-    test_dataset = MedData_test(source_test_dir, label_test_dir)
+    full_dataset = MedData_train(source_train_dir, label_train_dir)
 
-    test_loader = DataLoader(test_dataset.test_dataset, batch_size=1, shuffle=False)
+    val_loader = DataLoader(full_dataset.val_dataset,
+                            batch_size=1,
+                            shuffle=False,
+                            pin_memory=True,
+                            drop_last=False,
+                            num_workers=hp.num_workers)
+    print('ValSet Total Number:', len(full_dataset.val_dataset))
+    print('Data Loaded! Prepare to test......\n')
+
     model.eval()
 
     with torch.no_grad():
-        loop_test = tqdm(enumerate(test_loader), total=len(test_loader))
+        loop_test = tqdm(enumerate(val_loader), total=len(val_loader))
         for i, batch in loop_test:
             x = batch['source']['data']
             y = batch['label']['data']
