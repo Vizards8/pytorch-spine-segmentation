@@ -78,7 +78,8 @@ tensorboard --logdir logs
 * 8.20 添加PSPNet支持
 * 8.23 添加Using Device，方便调试
 * 8.25 添加IOU，Dice，FP，FN，待测试
-
+* 8.27 测试GPU服务器性能，综合考虑，优选3090
+* 8.27 搞半天label是0-19，20分类¿我TM
 
 ## Todo
 - [ ] 切片880*880过大，不合理，需要trick
