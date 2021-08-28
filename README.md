@@ -81,6 +81,7 @@ tensorboard --logdir logs
 * 8.27 测试GPU服务器性能，综合考虑，优选3090
 * 8.27 搞半天label是0-19，20分类¿我TM
 * 8.27 use_queue,sampler任然存在问题，but因为用不到，所以不改了
+* 8.27 惊魂未定
 
 ## Todo
 - [ ] 切片880*880过大，不合理，需要trick
