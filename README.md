@@ -55,7 +55,7 @@ python preprocess.py
 
 ### 训练模型
 ```bash
-python main.py
+nohup python main.py > runlog 2>&1 &
 ```
 
 ### 查看效果
