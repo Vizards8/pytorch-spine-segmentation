@@ -1,15 +1,24 @@
-# from matplotlib import pylab as plt
-# import nibabel as nib
-# from nibabel.viewers import OrthoSlicer3D
+from matplotlib import pylab as plt
+import nibabel as nib
+from nibabel.viewers import OrthoSlicer3D
+
+# file = './dataset/train/source/Case1.nii.gz'  # 你的nii或者nii.gz文件路径
+# labels =[0 for i in range(20)]
+# for i in range(1,201):
+#     file = './dataset/train/label/mask_case'+str(i)+'.nii.gz'  # 你的nii或者nii.gz文件路径
+#     img = nib.load(file)
+#     data = img.get_data()
 #
-# file = '../dataset/train/source/Case1.nii.gz'  # 你的nii或者nii.gz文件路径
-# # file = '../dataset/slice_train/label/mask_case1_7.nii.gz'  # 你的nii或者nii.gz文件路径
-# img = nib.load(file)
-# data = img.get_fdata()
+#     import numpy as np
 #
-# import numpy as np
-#
-# print(np.unique(data))
+#     uni = np.unique(data)
+#     # print(uni)
+#     for j in uni:
+#         labels[j] += 1
+# print('Calculate: number of MRI with this label / total number of MRI')
+# for i in range(20):
+#     print(f'{i}: {labels[i]}/200')
+
 # print('img:', img)
 # print('header:', img.header['db_name'])  # 输出nii的头文件
 
@@ -85,3 +94,18 @@
 # # To figure out the number of patches beforehand:
 # sampler = tio.GridSampler(subject=colin, patch_size=(256, 256, 1))
 # print(len(sampler))
+
+# import torch
+# import numpy as np
+#
+# gt = torch.tensor(([1, 2, 3], [4, 5, 6]))
+# pred = torch.tensor(([0, 1, 0], [0, 1, 0]))
+# pred = pred[np.newaxis, :]
+#
+# N = gt.size(0)
+# pred_flat = pred.view(N, -1)
+# gt_flat = gt.view(N, -1)
+# print((pred_flat != 0) * (gt_flat != 0))
+# tp = torch.sum((pred_flat != 0) * (gt_flat != 0), dim=1)
+# tp2 = torch.sum(gt_flat * pred_flat, dim=1)
+# print('a')
