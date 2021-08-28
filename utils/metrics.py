@@ -298,9 +298,9 @@ def pixel_accuracy(pred, gt, eps=1e-5):
     fn = torch.sum((pred_flat == 0) * (gt_flat != 0), dim=1)
 
     score = (tp.float() + eps) / ((tp + fn).float() + eps)
-    # if score > 0.9:
-    #     print(f'gt_1:{torch.sum(gt_flat, dim=1).item()}, pred_1:{torch.sum(pred_flat, dim=1).item()}')
-    #     print(f'tp:{tp.item()}, fn:{fn.item()}')
+    # if score < 0.01:
+    #     print(
+    #         f'score:{score.item()}, gt:{torch.sum(gt_flat, dim=1).item()}, pred:{torch.sum(pred_flat, dim=1).item()}, tp:{tp.item()}, fn:{fn.item()}')
     return score.sum() / N
 
 

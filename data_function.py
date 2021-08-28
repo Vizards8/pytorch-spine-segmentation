@@ -122,6 +122,7 @@ class MedData_train(torch.utils.data.Dataset):
             # else:
             #     subjects.append(subject)
             subjects.append(subject)
+
         subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
 
         if hp.use_queue:

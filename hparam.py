@@ -1,5 +1,4 @@
 class hparams:
-    gpu_nums = 1
     train_or_test = 'train'  # 'train' or 'test'
     output_dir = 'logs'
     inference_dir = 'results'
@@ -7,11 +6,12 @@ class hparams:
     latest_checkpoint_file = 'checkpoint_0200.pt'
     # total_epochs = 5000000
     total_epochs = 300
-    epochs_per_checkpoint = 50
-    batch_size = 1
+    epochs_per_checkpoint = 1
+    batch_size = 1  # 多卡训练时，务必大于gpu_nums，且为整数倍
+    gpu_nums = 1  # 多卡训练设置有几张GPU
     ckpt = None  # 用来断点继续训练，例如:'checkpoint_100.pt'
-    val_split = 0.05  # 验证集/数据集总数，一般训练集:验证集 = 4:1
-    unused_split = 0.75  # 不加载的数据/数据集总数，若train_or_test = 'train' 则此次不加载
+    val_split = 0.2  # 验证集/数据集总数，一般训练集:验证集 = 4:1
+    unused_split = 0.0  # 不加载的数据/数据集总数，若train_or_test = 'train' 则此次不加载
     # 剩下的就是训练集的个数
     init_lr = 0.005
     scheduer_step_size = 20
@@ -19,8 +19,8 @@ class hparams:
     debug = False
     mode = '2d'  # '2d or '3d'
     in_class = 1
-    out_class = 20
-    out_classlist = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    out_class = 18
+    out_classlist = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18]
 
     use_queue = False
     samples_per_volume = 5
@@ -37,9 +37,9 @@ class hparams:
 
     save_arch = '.nii.gz'
 
-    # source_train_dir = './dataset/testslice/source'
-    # label_train_dir = './dataset/testslice/label/'
-    source_train_dir = './dataset/slice_train/source/'
-    label_train_dir = './dataset/slice_train/label/'
+    source_train_dir = './dataset/testslice/source'
+    label_train_dir = './dataset/testslice/label/'
+    # source_train_dir = './dataset/slice_train/source/'
+    # label_train_dir = './dataset/slice_train/label/'
     source_test_dir = './dataset/test/source/'
     label_test_dir = './dataset/test/label/'
