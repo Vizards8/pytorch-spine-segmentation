@@ -6,7 +6,7 @@ class hparams:
     latest_checkpoint_file = 'checkpoint_0200.pt'
     # total_epochs = 5000000
     total_epochs = 300
-    epochs_per_checkpoint = 1
+    epochs_per_checkpoint = 50
     batch_size = 1  # 多卡训练时，务必大于gpu_nums，且为整数倍
     gpu_nums = 1  # 多卡训练设置有几张GPU
     ckpt = None  # 用来断点继续训练，例如:'checkpoint_100.pt'
@@ -37,9 +37,9 @@ class hparams:
 
     save_arch = '.nii.gz'
 
-    source_train_dir = './dataset/testslice/source'
-    label_train_dir = './dataset/testslice/label/'
-    # source_train_dir = './dataset/slice_train/source/'
-    # label_train_dir = './dataset/slice_train/label/'
+    # source_train_dir = './dataset/testslice/source'
+    # label_train_dir = './dataset/testslice/label/'
+    source_train_dir = './dataset/slice_train/source/'
+    label_train_dir = './dataset/slice_train/label/'
     source_test_dir = './dataset/test/source/'
     label_test_dir = './dataset/test/label/'
