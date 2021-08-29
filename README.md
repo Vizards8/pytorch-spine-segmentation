@@ -28,15 +28,26 @@
 ```
 pytorch-spine-segmentation
 ├── dataset
-    └── train
+    ├── train
+    │    ├── source
+    │    │   ├── Case1.nii.gz
+    │    │   ├── Case2.nii.gz
+    │    │   ├── ...
+    │    │   └── Case160.nii.gz
+    │    └── label
+    │        ├── mask_case1.nii.gz
+    │        ├── mask_case2.nii.gz
+    │        ├── ...
+    │        └── mask_case160.nii.gz
+    └── test
         ├── source
-        │   ├── Case1.nii.gz
-        │   ├── Case2.nii.gz
+        │   ├── Case161.nii.gz
+        │   ├── Case162.nii.gz
         │   ├── ...
         │   └── Case200.nii.gz
         └── label
-            ├── mask_case1.nii.gz
-            ├── mask_case2.nii.gz
+            ├── mask_case161.nii.gz
+            ├── mask_case162.nii.gz
             ├── ...
             └── mask_case200.nii.gz
 ```
