@@ -41,6 +41,8 @@ def Slice(old_path, new_path):
 if __name__ == '__main__':
     source_train_dir = './dataset/train/source/'
     label_train_dir = './dataset/train/label/'
+    source_test_dir = './dataset/test/source/'
+    label_test_dir = './dataset/test/label/'
 
     files = os.listdir(source_train_dir)
     for file in files:
@@ -48,6 +50,13 @@ if __name__ == '__main__':
     files = os.listdir(label_train_dir)
     for file in files:
         Slice(label_train_dir + file, hp.label_train_dir)
+
+    files = os.listdir(source_test_dir)
+    for file in files:
+        Slice(source_test_dir + file, hp.source_test_dir)
+    files = os.listdir(label_test_dir)
+    for file in files:
+        Slice(label_test_dir + file, hp.label_test_dir)
 
     # # For the test
     # old_path = '../dataset/train/source/Case200.nii.gz'

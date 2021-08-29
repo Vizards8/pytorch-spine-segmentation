@@ -95,17 +95,32 @@ from nibabel.viewers import OrthoSlicer3D
 # sampler = tio.GridSampler(subject=colin, patch_size=(256, 256, 1))
 # print(len(sampler))
 
-# import torch
+# # 测试两个张图的dice
+# from utils.metrics import *
+# import nibabel as nib
 # import numpy as np
+# from onehot import *
+# import torch
 #
-# gt = torch.tensor(([1, 2, 3], [4, 5, 6]))
-# pred = torch.tensor(([0, 1, 0], [0, 1, 0]))
-# pred = pred[np.newaxis, :]
+# file = './dataset/dice/predict.nii.gz'
+# img = nib.load(file)
+# pred = img.get_fdata()
+# file = './dataset/dice/gt.nii.gz'
+# img = nib.load(file)
+# gt = img.get_fdata()
 #
-# N = gt.size(0)
-# pred_flat = pred.view(N, -1)
-# gt_flat = gt.view(N, -1)
-# print((pred_flat != 0) * (gt_flat != 0))
-# tp = torch.sum((pred_flat != 0) * (gt_flat != 0), dim=1)
-# tp2 = torch.sum(gt_flat * pred_flat, dim=1)
-# print('a')
+# class_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+# pred = pred[np.newaxis, np.newaxis, :]
+# pred = mask2onehot(pred, class_list)
+# pred = torch.FloatTensor(pred).to('cuda:0')
+# gt = gt[np.newaxis, np.newaxis, :]
+# gt = mask2onehot(gt, class_list)
+# gt = torch.FloatTensor(gt).to('cuda:0')
+# dice_list = []
+# for i in range(len(class_list)):
+#     if i == 8:
+#         print('a')
+#     dice = diceCoeffv2(pred[:, i, :, :], gt[:, i, :, :])
+#     dice_list.append(dice)
+#     print(f'id:{i}, dice:{dice}')
+# print(mean(dice_list))

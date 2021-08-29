@@ -5,7 +5,10 @@
 * [如何运行](#如何运行)
     * [准备数据](#准备数据)
     * [调整超参](#调整超参)
+    * [安装环境](#安装环境)
+    * [前处理](#前处理)
     * [训练模型](#训练模型)
+    * [压缩logs](#压缩logs)
 * [Logs](#Logs)
 * [Todo](#Todo)
 * [写论文需要的内容](#写论文需要的内容)
@@ -55,13 +58,12 @@ python preprocess.py
 
 ### 训练模型
 ```bash
-nohup python main.py > runlog 2>&1 &
+nohup python main.py > runlog.txt 2>&1 &
 ```
 
-### 查看效果
-* 在terminal输入以下内容，并点击网址:
+### 压缩logs
 ```bash
-tensorboard --logdir logs
+tar -cvf logs.zip logs
 ```
 
 ## Logs
@@ -82,6 +84,9 @@ tensorboard --logdir logs
 * 8.27 搞半天label是0-19，20分类¿我TM
 * 8.27 use_queue,sampler任然存在问题，but因为用不到，所以不改了
 * 8.27 惊魂未定
+* 8.28 问题排查，排除笔记本问题，但UNet的评价指标仍然异常
+* 8.29 修改数据集划分，1-160位训练集，161-200为测试集，方便后续统计
+
 
 ## Todo
 - [ ] 切片880*880过大，不合理，需要trick
@@ -101,7 +106,8 @@ tensorboard --logdir logs
     * pixel acc
 * model
     * UNet
-    * FCN
+    * SegNet
+    * ~~FCN~~
     * UNet++
     * PSPNet
     * DeepLabv3

@@ -23,12 +23,6 @@ from data_function import MedData_train
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-source_train_dir = hp.source_train_dir
-label_train_dir = hp.label_train_dir
-
-source_test_dir = hp.source_test_dir
-label_test_dir = hp.label_test_dir
-
 
 def parse_training_args(parser):
     """
@@ -87,42 +81,52 @@ def train():
     os.makedirs(args.output_dir, exist_ok=True)
 
     if hp.mode == '2d':
-        # from models.two_d.segnet2 import SegNet
-        # model = SegNet(n_init_features=hp.in_class, num_classes=hp.out_class)
+        if hp.model_name == 'SegNet':
+            from models.two_d.segnet2 import SegNet
+            model = SegNet(n_init_features=hp.in_class, num_classes=hp.out_class)
 
-        from models.two_d.unet import Unet
-        model = Unet(in_channels=hp.in_class, classes=hp.out_class)
+        elif hp.model_name == 'UNet':
+            from models.two_d.unet import Unet
+            model = Unet(in_channels=hp.in_class, classes=hp.out_class)
 
-        # from models.two_d.miniseg import MiniSeg
-        # model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
+        elif hp.model_name == 'MiniSeg':
+            from models.two_d.miniseg import MiniSeg
+            model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
 
-        # from models.two_d.pspnet import PSPNet
-        # model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
+        elif hp.model_name == 'PSPNet':
+            from models.two_d.pspnet import PSPNet
+            model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
 
-        # ATTU_Net 512*512*1
-        # from models.two_d.attunet import AttU_Net
-        # model = AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
+        elif hp.model_name == 'AttUNet':
+            # ATTU_Net 512*512*1
+            from models.two_d.attunet import AttU_Net
+            model = AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
 
-        # R2U_Net 512*512*1
-        # from models.two_d.R2U_Net import R2U_Net
-        # model = R2U_Net(img_ch=hp.in_class, output_ch=hp.out_class)
+        elif hp.model_name == 'R2UNet':
+            # R2U_Net 512*512*1
+            from models.two_d.R2U_Net import R2U_Net
+            model = R2U_Net(img_ch=hp.in_class, output_ch=hp.out_class)
 
-        # R2AttU_Net 265*256*1
-        # from models.two_d.R2AttU_Net import R2AttU_Net
-        # model = R2AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
+        elif hp.model_name == 'R2AttUNet':
+            # R2AttU_Net 265*256*1
+            from models.two_d.R2AttU_Net import R2AttU_Net
+            model = R2AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
 
+        elif hp.model_name == 'DeepLabv3':
+            from models.two_d.deeplab2 import DeepLabv3_plus
+            model = DeepLabv3_plus(nInputChannels=hp.in_class, n_classes=hp.out_class)
+
+        elif hp.model_name == 'UNetpp':
+            from models.two_d.unetpp import ResNet34UnetPlus
+            model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
+
+        else:
+            print('ERROR: No such model')
         # from models.two_d.fcn import FCN32s as fcn
         # model = fcn(in_class =hp.in_class,n_class=hp.out_class)
 
-        # from models.two_d.segnet import SegNet
+        # from models.two_d.segnet import SegNet  # 报错
         # model = SegNet(input_nbr=hp.in_class, label_nbr=hp.out_class)
-
-        # from models.two_d.deeplab import DeepLabV3
-        # model = DeepLabV3(in_class=hp.in_class,class_num=hp.out_class)
-
-        # from models.two_d.unetpp import ResNet34UnetPlus
-        # model = ResNet34UnetPlus(num_channels=hp.in_class,num_class=hp.out_class)
-
 
     elif hp.mode == '3d':
 
@@ -188,22 +192,24 @@ def train():
     #                           pin_memory=False,
     #                           drop_last=False)
 
-    full_dataset = MedData_train(source_train_dir, label_train_dir)
-
-    train_loader = DataLoader(full_dataset.train_dataset,
+    print('Loading Dataset......\n')
+    full_dataset = MedData_train(hp.source_train_dir, hp.label_train_dir)
+    train_loader = DataLoader(full_dataset.dataset,
                               batch_size=args.batch,
                               shuffle=True,
                               pin_memory=True,
                               drop_last=False,
                               num_workers=hp.num_workers)
-    val_loader = DataLoader(full_dataset.val_dataset,
+
+    full_dataset = MedData_train(hp.source_test_dir, hp.label_test_dir)
+    val_loader = DataLoader(full_dataset.dataset,
                             batch_size=args.batch,
                             shuffle=True,
                             pin_memory=True,
                             drop_last=False,
                             num_workers=hp.num_workers)
-    print('TrainSet Total Number:', len(full_dataset.train_dataset))
-    print('ValSet Total Number:', len(full_dataset.val_dataset))
+    print('\nTrainSet Total Number:', len(train_loader) * hp.batch_size)
+    print('ValSet Total Number:', len(val_loader) * hp.batch_size)
     print('Data Loaded! Prepare to train......\n')
 
     # train_loader = DataLoader(train_dataset.queue_dataset,
@@ -271,7 +277,7 @@ def train():
             writer.add_scalar('Training/Loss', loss.item(), iteration)
             writer.add_scalar('Training/IOU', IOU.item(), iteration)
             writer.add_scalar('Training/Dice', dice.item(), iteration)
-            writer.add_scalar('Training/Acc', acc.item(), iteration)
+            writer.add_scalar('Training/Recall', acc.item(), iteration)
             writer.add_scalar('Training/False_Positive_rate', false_positive_rate.item(), iteration)
             writer.add_scalar('Training/False_Negative_rate', false_negative_rate.item(), iteration)
 
@@ -290,17 +296,17 @@ def train():
 
         scheduler.step()
 
-        # # Store latest checkpoint in each epoch
-        # torch.save(
-        #     {
-        #         "model": model.state_dict(),
-        #         "optim": optimizer.state_dict(),
-        #         "scheduler": scheduler.state_dict(),
-        #         "epoch": epoch,
-        #
-        #     },
-        #     os.path.join(args.output_dir, args.latest_checkpoint_file),
-        # )
+        # Store latest checkpoint in each epoch
+        torch.save(
+            {
+                "model": model.state_dict(),
+                "optim": optimizer.state_dict(),
+                "scheduler": scheduler.state_dict(),
+                "epoch": epoch,
+
+            },
+            os.path.join(args.output_dir, args.latest_checkpoint_file),
+        )
 
         # Save checkpoint and predicted *.nii.gz
         if epoch % args.epochs_per_checkpoint == 0:
@@ -392,7 +398,7 @@ def train():
                 writer.add_scalar('Validation/Val_Loss', val_loss.item(), val_iteration)
                 writer.add_scalar('Validation/IOU', IOU.item(), val_iteration)
                 writer.add_scalar('Validation/Dice', dice.item(), val_iteration)
-                writer.add_scalar('Validation/Acc', acc.item(), val_iteration)
+                writer.add_scalar('Validation/Recall', acc.item(), val_iteration)
                 writer.add_scalar('Validation/False_Positive_rate', false_positive_rate.item(), val_iteration)
                 writer.add_scalar('Validation/False_Negative_rate', false_negative_rate.item(), val_iteration)
 
@@ -469,26 +475,52 @@ def test():
     os.makedirs(hp.inference_dir, exist_ok=True)
 
     if hp.mode == '2d':
-        from models.two_d.unet import Unet
-        model = Unet(in_channels=hp.in_class, classes=hp.out_class)
+        if hp.model_name == 'SegNet':
+            from models.two_d.segnet2 import SegNet
+            model = SegNet(n_init_features=hp.in_class, num_classes=hp.out_class)
 
-        # from models.two_d.miniseg import MiniSeg
-        # model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
+        elif hp.model_name == 'UNet':
+            from models.two_d.unet import Unet
+            model = Unet(in_channels=hp.in_class, classes=hp.out_class)
 
+        elif hp.model_name == 'MiniSeg':
+            from models.two_d.miniseg import MiniSeg
+            model = MiniSeg(in_input=hp.in_class, classes=hp.out_class)
+
+        elif hp.model_name == 'PSPNet':
+            from models.two_d.pspnet import PSPNet
+            model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
+
+        elif hp.model_name == 'AttUNet':
+            # ATTU_Net 512*512*1
+            from models.two_d.attunet import AttU_Net
+            model = AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
+
+        elif hp.model_name == 'R2UNet':
+            # R2U_Net 512*512*1
+            from models.two_d.R2U_Net import R2U_Net
+            model = R2U_Net(img_ch=hp.in_class, output_ch=hp.out_class)
+
+        elif hp.model_name == 'R2AttUNet':
+            # R2AttU_Net 265*256*1
+            from models.two_d.R2AttU_Net import R2AttU_Net
+            model = R2AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
+
+        elif hp.model_name == 'DeepLabv3':
+            from models.two_d.deeplab2 import DeepLabv3_plus
+            model = DeepLabv3_plus(nInputChannels=hp.in_class, n_classes=hp.out_class)
+
+        elif hp.model_name == 'UNetpp':
+            from models.two_d.unetpp import ResNet34UnetPlus
+            model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
+
+        else:
+            print('ERROR: No such model')
         # from models.two_d.fcn import FCN32s as fcn
-        # model = fcn(in_class =hp.in_class, n_class=hp.out_class)
+        # model = fcn(in_class =hp.in_class,n_class=hp.out_class)
 
-        # from models.two_d.segnet import SegNet
+        # from models.two_d.segnet import SegNet  # 报错
         # model = SegNet(input_nbr=hp.in_class, label_nbr=hp.out_class)
-
-        # from models.two_d.deeplab import DeepLabV3
-        # model = DeepLabV3(in_class=hp.in_class, class_num=hp.out_class)
-
-        # from models.two_d.unetpp import ResNet34UnetPlus
-        # model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
-
-        # from models.two_d.pspnet import PSPNet
-        # model = PSPNet(in_class=hp.in_class, n_classes=hp.out_class)
 
     elif hp.mode == '3d':
         from models.three_d.unet3d import UNet
@@ -521,15 +553,14 @@ def test():
 
     model.to(device)
 
-    full_dataset = MedData_train(source_train_dir, label_train_dir)
-
-    val_loader = DataLoader(full_dataset.val_dataset,
+    full_dataset = MedData_train(hp.source_test_dir, hp.label_test_dir)
+    val_loader = DataLoader(full_dataset.dataset,
                             batch_size=1,
                             shuffle=False,
                             pin_memory=True,
                             drop_last=False,
                             num_workers=hp.num_workers)
-    print('ValSet Total Number:', len(full_dataset.val_dataset))
+    print('ValSet Total Number:', len(full_dataset.dataset))
     print('Data Loaded! Prepare to test......\n')
 
     model.eval()
@@ -649,5 +680,5 @@ if __name__ == '__main__':
 
     if hp.train_or_test == 'train':
         train()
-        # elif hp.train_or_test == 'test':
+    elif hp.train_or_test == 'test':
         test()

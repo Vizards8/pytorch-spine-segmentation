@@ -45,11 +45,7 @@ class MedData_train(torch.utils.data.Dataset):
         labels_dir = Path(labels_dir)
         self.label_paths = sorted(labels_dir.glob(hp.fold_arch))
 
-        val_size = int(hp.val_split * len(self.image_paths))
-        test_size = int(hp.unused_split * len(self.image_paths))
-        train_size = len(self.image_paths) - val_size - test_size
-
-        self.subjects_paths = []  # dict打包路径，用于split
+        self.subjects_paths = []  # dict打包路径
         for (image_path, label_path) in zip(self.image_paths, self.label_paths):
             subject_path = {
                 'source': image_path,
@@ -57,16 +53,17 @@ class MedData_train(torch.utils.data.Dataset):
             }
             self.subjects_paths.append(subject_path)
 
-        train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
-            self.subjects_paths,
-            [train_size, val_size, test_size],
-            torch.Generator().manual_seed(0))
-
-        # split完成，train,val分别从各自dataset中的路径加载
-        print('Loading Dataset......\n')
-
-        self.train_dataset = self.load_from_dataset(train_dataset)
-        self.val_dataset = self.load_from_dataset(val_dataset)
+        # 从dataset中的路径加载
+        if hp.small_sample:
+            size = int(hp.small_sample_split * len(self.image_paths))
+            unused_size = len(self.image_paths) - size
+            dataset, unused_dataset = torch.utils.data.random_split(
+                self.subjects_paths,
+                [size, unused_size],
+                torch.Generator().manual_seed(0))
+            self.dataset = self.load_from_dataset(dataset)
+        else:
+            self.dataset = self.load_from_dataset(self.subjects_paths)
 
         # # 一次性加载所有data，内存开销巨大，口区
         # self.subjects = []
@@ -200,6 +197,7 @@ class MedData_train(torch.utils.data.Dataset):
                     ZNormalization(),
                     RandomNoise(),
                     RandomFlip(axes=(0,)),
+                    RandomAffine()
                     # OneOf({
                     #     RandomAffine(): 0.8,
                     #     RandomElasticDeformation(): 0.2,

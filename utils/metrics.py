@@ -14,7 +14,9 @@ False Negative（假负 , FN）预测为负的正样本
 
 
 def metrics(predict, label, out_class):
-    """Calculate the required metrics"""
+    """Calculate the required metrics
+    pred = label = [BS, class_num, H, W]
+    """
     IOU_list = []
     Dice_list = []
     false_positive_rate_list = []
@@ -112,6 +114,7 @@ def intersection_and_union(im_pred, im_lab, num_class):
 def diceCoeff(pred, gt, smooth=1e-5, ):
     r""" computational formula：
         dice = (2 * (pred ∩ gt)) / |pred| + |gt|
+        |pred|:pred中的元素和
     """
 
     N = gt.size(0)
@@ -316,10 +319,6 @@ def specificity(pred, gt, eps=1e-5):
     score = (tn.float() + eps) / ((fp + tn).float() + eps)
 
     return score.sum() / N
-
-
-def recall(pred, gt, eps=1e-5):
-    return sensitivity(pred, gt)
 
 
 if __name__ == '__main__':
