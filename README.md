@@ -55,6 +55,11 @@ pytorch-spine-segmentation
 ### 调整超参
 * 如有必要，详见hparam.py
 
+### 重新拉取
+```bash
+git clone https://github.com/Vizards8/pytorch-spine-segmentation.git
+```
+
 ### 安装环境
 * 如在服务器上运行，须执行额外包安装:
 ```bash
