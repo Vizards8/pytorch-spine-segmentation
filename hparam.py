@@ -6,8 +6,8 @@ class hparams:
     small_sample = False  # 使用较少数量的样本，用于调试，启用下面的小数
     small_sample_split = 0.01  # small_sample = True时生效，本次采用的数据量/总数据量
     # 剩下的就是训练集的个数
-    batch_size = 1  # 多卡训练，例如：2张3090,2*4=8
-    model_name = 'UNet'  # 'UNet' 'SegNet' 'MiniSeg' 'PSPNet' 'AttUNet' 'R2UNet' 'R2AttUNet' 'DeepLabv3' 'UNetpp'
+    batch_size = 4  # 多卡训练，例如：2张3090,2*4=8
+    model_name = 'SegNet'  # 'UNet' 'SegNet' 'MiniSeg' 'PSPNet' 'AttUNet' 'R2UNet' 'R2AttUNet' 'DeepLabv3' 'UNetpp'
 
     output_dir = 'logs'
     inference_dir = 'results'
