@@ -28,12 +28,6 @@ def parse_training_args(parser):
     """
     Parse commandline arguments.
     """
-    device_name = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
-    if torch.cuda.is_available():
-        print(f'Using Device: {torch.cuda.device_count()} GPU {device_name}')
-    else:
-        print(f'Using Device:{device}')
-
     parser.add_argument('-o', '--output_dir', type=str, default=hp.output_dir, required=False,
                         help='Directory to save checkpoints')
     parser.add_argument('--latest-checkpoint-file', type=str, default=hp.latest_checkpoint_file,
@@ -69,6 +63,13 @@ def parse_training_args(parser):
 
 def train():
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+    print(f'small_sample:{hp.small_sample}, model:{hp.model_name}, out_class:{hp.out_class}')
+
+    device_name = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
+    if torch.cuda.is_available():
+        print(f'Using Device: {torch.cuda.device_count()} GPU {device_name}')
+    else:
+        print(f'Using Device:{device}')
 
     parser = argparse.ArgumentParser(description='PyTorch Medical Segmentation Training')
     parser = parse_training_args(parser)
