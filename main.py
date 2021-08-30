@@ -68,6 +68,8 @@ def parse_training_args(parser):
 
 
 def train():
+    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
+
     parser = argparse.ArgumentParser(description='PyTorch Medical Segmentation Training')
     parser = parse_training_args(parser)
     args, _ = parser.parse_known_args()
