@@ -77,9 +77,10 @@ python preprocess.py
 nohup python main.py > runlog.txt 2>&1 &
 ```
 
-### 压缩logs
+### 压缩logs(均可)
 ```bash
-tar -cvf logs.zip logs
+zip -r logs.zip logs/
+tar -cvf logs.tar.gz logs/
 ```
 
 ## Logs
