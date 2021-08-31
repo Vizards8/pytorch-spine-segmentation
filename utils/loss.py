@@ -1,6 +1,6 @@
 from torch.nn.modules.loss import _Loss
 from utils.metrics import *
-
+import torch
 
 
 class BinarySoftDiceLoss(_Loss):
@@ -23,6 +23,8 @@ class SoftDiceLoss(_Loss):
         class_dice = []
         for i in range(self.num_classes):
             class_dice.append(diceCoeffv2(y_pred[:, i:i + 1, :, :], y_true[:, i:i + 1, :, :]))
+        w = 1 - torch.sum(y_true[:, 0, :, :]) / y_true[:, 0, :, :].numel()
+        class_dice[0] *= w
         mean_dice = sum(class_dice) / len(class_dice)
         return 1 - mean_dice
 
@@ -38,7 +40,7 @@ class SoftDiceLossV2(_Loss):
         class_loss = []
         for i in range(1, self.num_classes):
             dice = diceCoeffv2(y_pred[:, i:i + 1, :], y_true[:, i:i + 1, :])
-            class_loss.append((1-dice) * self.weight[i-1])
+            class_loss.append((1 - dice) * self.weight[i - 1])
         if self.reduction == 'mean':
             return sum(class_loss) / len(class_loss)
         elif self.reduction == 'sum':
@@ -48,7 +50,8 @@ class SoftDiceLossV2(_Loss):
 
 
 class WBCELoss(_Loss):
-    def __init__(self, num_classes,  smooth=0, size=None, weight=(1.0, 1.0, 1.0, 1.0, 1.0, 1.0), reduction='mean', ignore_index=255):
+    def __init__(self, num_classes, smooth=0, size=None, weight=(1.0, 1.0, 1.0, 1.0, 1.0, 1.0), reduction='mean',
+                 ignore_index=255):
         super(WBCELoss, self).__init__()
         self.num_classes = num_classes
         self.smooth = smooth
@@ -76,7 +79,8 @@ class BCE_Dice_Loss(_Loss):
         self.num_classes = num_classes
 
     def forward(self, inputs, targets):
-        return self.weight[0] * self.bce_loss(inputs, targets * (1 - self.smooth) + self.smooth / self.num_classes) + self.weight[1] * self.dice_loss(inputs, targets)
+        return self.weight[0] * self.bce_loss(inputs, targets * (1 - self.smooth) + self.smooth / self.num_classes) + \
+               self.weight[1] * self.dice_loss(inputs, targets)
 
 
 class WBCE_Dice_Loss(_Loss):

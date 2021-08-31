@@ -235,10 +235,6 @@ def train():
         loop_train = tqdm(enumerate(train_loader), total=len(train_loader))
         for i, batch in loop_train:
 
-            if hp.debug:
-                if i >= 1:
-                    break
-
             model.train()
 
             optimizer.zero_grad()
@@ -261,8 +257,8 @@ def train():
 
             # Loss
             outputs = model(x)
-            outputs = torch.sigmoid(outputs)
             loss = criterion(outputs, y)
+            outputs = torch.sigmoid(outputs)
             loss.backward()
 
             optimizer.step()
