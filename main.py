@@ -257,12 +257,12 @@ def train():
 
             # Loss
             outputs = model(x)
-            outputs = torch.sigmoid(outputs)
-            # outputs = torch.nn.functional.softmax(outputs, dim=1)
-            ss = []
-            for j in range(hp.out_class):
-                ss.append(round(outputs[0, j, 0, 0].item(), 3))
-            print(ss)
+            # outputs = torch.sigmoid(outputs)
+            outputs = torch.nn.functional.softmax(outputs, dim=1)
+            # ss = []
+            # for j in range(hp.out_class):
+            #     ss.append(round(outputs[0, j, 0, 0].item(), 3))
+            # print(ss)
             loss = criterion(outputs, y)
             loss.backward()
 
@@ -272,7 +272,7 @@ def train():
             # for metrics
             predict = outputs.clone()
             predict = onehot.onehot2mask(predict.cpu().detach().numpy())
-            # print(np.unique(predict))
+            print(np.unique(predict))
             predict = onehot.mask2onehot(predict, hp.out_classlist)
             predict = torch.FloatTensor(predict).to(device)  # 转换为torch.tensor才能送进gpu
             IOU, dice, acc, false_positive_rate, false_negative_rate = metrics(predict, y, hp.out_class)
