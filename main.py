@@ -261,7 +261,7 @@ def train():
             outputs = torch.nn.functional.softmax(outputs, dim=1)
             # ss = []
             # for j in range(hp.out_class):
-            #     ss.append(round(outputs[0, j, 0, 0].item(), 3))
+            #     ss.append(round(outputs[0, j, 0, 440].item(), 3))
             # print(ss)
             loss = criterion(outputs, y)
             loss.backward()

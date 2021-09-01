@@ -117,7 +117,8 @@ tar -cvf logs.tar.gz logs/
         * 因为你用的sigmoid，他当成独立概率了，有一个为0.99，其他可能还有0.4，这个在降低，loss也在降低
     - [ ] 用softmax还是sigmoid，在测，均使用0.25的总数据集
         * sigmoid，45epoch，loss0.3-0.4，缓慢下降
-        * softmax，
+        * softmax，lr = 0.002，王懿测
+        * softmax，lr = 0.0001，去掉/不去掉loss系数，都有个背景色label9，周能测
     
     
 ## Todo

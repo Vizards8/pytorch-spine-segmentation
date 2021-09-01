@@ -3,8 +3,8 @@ class hparams:
     # total_epochs = 5000000
     total_epochs = 300
     epochs_per_checkpoint = 5  # 已经添加了每轮都保存，这个不用管
-    small_sample = True  # 使用较少数量的样本，用于调试，启用下面的小数
-    small_sample_split = 0.25  # small_sample = True时生效，本次采用的数据量/总数据量
+    small_sample = False  # 使用较少数量的样本，用于调试，启用下面的小数
+    small_sample_split = 0.01  # small_sample = True时生效，本次采用的数据量/总数据量
     # 剩下的就是训练集的个数
     see_predict = True
     batch_size = 4  # 多卡训练，例如：2张3090,2*4=8
@@ -16,7 +16,7 @@ class hparams:
     latest_checkpoint_file = 'checkpoint_latest.pt'
     gpu_nums = 1  # 多卡训练设置有几张GPU
     ckpt = None  # 用来断点继续训练，例如:'checkpoint_100.pt'
-    init_lr = 0.002  # 0.002
+    init_lr = 0.0005  # 0.002
     scheduer_step_size = 20
     scheduer_gamma = 0.8
     debug = False

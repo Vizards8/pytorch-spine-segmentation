@@ -24,7 +24,7 @@ class SoftDiceLoss(_Loss):
         for i in range(self.num_classes):
             class_dice.append(diceCoeffv2(y_pred[:, i:i + 1, :, :], y_true[:, i:i + 1, :, :]))
         # w = 1 - torch.sum(y_true[:, 0, :, :]) / y_true[:, 0, :, :].numel()
-        class_dice[0] *= 0.1
+        # class_dice[0] *= 0.1
         mean_dice = sum(class_dice) / len(class_dice)
         return 1 - mean_dice
 
