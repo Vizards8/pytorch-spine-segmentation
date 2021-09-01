@@ -257,8 +257,8 @@ def train():
 
             # Loss
             outputs = model(x)
-            loss = criterion(outputs, y)
             outputs = torch.sigmoid(outputs)
+            loss = criterion(outputs, y)
             loss.backward()
 
             optimizer.step()

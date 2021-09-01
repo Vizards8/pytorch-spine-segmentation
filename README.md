@@ -74,6 +74,8 @@ python preprocess.py
 
 ### 训练模型
 ```bash
+git reset --hard
+git pull
 cd ../mnt/pytorch-spine-segmentation/
 nohup python main.py > runlog.txt 2>&1 &
 ```
