@@ -63,8 +63,7 @@ git clone https://github.com/Vizards8/pytorch-spine-segmentation.git
 ### 安装环境
 如在服务器上运行，须执行额外包安装:
 ```bash
-pip install torchio
-pip install tensorboard
+pip install torchio tensorboard
 ```
 
 ### 前处理
@@ -74,9 +73,9 @@ python preprocess.py
 
 ### 训练模型
 ```bash
+cd ../mnt/pytorch-spine-segmentation/
 git reset --hard
 git pull
-cd ../mnt/pytorch-spine-segmentation/
 nohup python main.py > runlog.txt 2>&1 &
 ```
 查看显卡占用，确保正常运行
