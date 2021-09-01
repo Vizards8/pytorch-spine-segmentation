@@ -61,7 +61,7 @@ git clone https://github.com/Vizards8/pytorch-spine-segmentation.git
 ```
 
 ### 安装环境
-* 如在服务器上运行，须执行额外包安装:
+如在服务器上运行，须执行额外包安装:
 ```bash
 pip install torchio
 pip install tensorboard
@@ -78,6 +78,10 @@ git reset --hard
 git pull
 cd ../mnt/pytorch-spine-segmentation/
 nohup python main.py > runlog.txt 2>&1 &
+```
+查看显卡占用，确保正常运行
+```bash
+nvidia-smi
 ```
 
 ### 压缩logs(均可)
@@ -107,10 +111,10 @@ tar -cvf logs.tar.gz logs/
 * 8.28 问题排查，排除笔记本问题，但UNet的评价指标仍然异常
 * 8.29 修改数据集划分，1-160位训练集，161-200为测试集，方便后续统计
 * 8.31 怀疑：
-    * 数据增强是不是太多了
-    * lr是不是太大：lr减小/10 epoch
-    * 权重初始化是不是不对
-    * 为什么预测是0，但是loss还在下降
+    - [ ] 数据增强是不是太多了
+    - [ ] lr是不是太大：修改lr = 0.0001，在测
+    - [x] 权重初始化是不是不对，应该对的
+    - [ ] 为什么预测是0，但是loss还在下降
 
 
 ## Todo
