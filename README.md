@@ -125,7 +125,17 @@ tar -cvf logs.tar.gz logs/
     * dice loss为什么要加权重
     * 我为什么要对测试集做数据增强
     * lr应该是多少
-* 9.2 Tag:softmax+无loss权重+0.0005(0.0001不行)+train/valid都有aug
+* 9.2 Tag:softmax+无loss权重+0.0005(0.0001不行)+train/valid都有aug，看着还行
+    * lr0.0001，小样本实验，loss:0.49/0.75,IOU:0.61/0.25，上下有别的label的边
+    * lr0.0005，me跑的0.25，0.8/10epoch，loss:,IOU:
+    * me跑的0.25，50epoch，loss:0.46/0.51,IOU:0.63/0.54
+    * hairu跑的all，晚上看结果
+* 9.2 Tag:softmax+无loss权重+0.001(0.0005不行)+去掉valid的aug
+    * lr0.0005，train/valid相差很大，我不懂，100epoch，loss:0.58/0.81,IOU:0.52/0.16
+    * lr0.002，可以，就是收敛有点慢，78epoch，valid_IOU只有0.2
+    * lr0.005，还是有点慢，关键颜色很混乱，100epoch，loss:0.44/0.62,IOU:0.4/0.2
+    * lr0.01，仍然并不好看，100epoch，loss:0.36/0.52,IOU:0.43/0.20
+    * 总结：validation颜色搅在一起，很奇怪，train没改，所以分割得很好也不奇怪
         
         
 ## Todo
