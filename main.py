@@ -212,7 +212,7 @@ def train():
                             drop_last=False,
                             num_workers=hp.num_workers)
     print('\nTrainSet Total Number:', len(train_loader) * hp.batch_size)
-    print('ValSet Total Number:', len(val_loader) * hp.batch_size)
+    print('ValSet Total Number:', len(val_loader))
     print('Data Loaded! Prepare to train......\n')
 
     # train_loader = DataLoader(train_dataset.queue_dataset,
