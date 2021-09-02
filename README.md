@@ -119,6 +119,7 @@ tar -cvf logs.tar.gz logs/
         * sigmoid，45epoch，loss0.3-0.4，缓慢下降
         * softmax，lr = 0.002，王懿测
         * softmax，lr = 0.0001，去掉/不去掉loss系数，都有个背景色label9，周能测
+        * softmax，为什么val_loss这么大？因为还是sigmoid没改，我是伞兵
     
     
 ## Todo

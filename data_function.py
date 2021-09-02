@@ -39,7 +39,8 @@ from tqdm import tqdm
 
 
 class MedData_train(torch.utils.data.Dataset):
-    def __init__(self, images_dir, labels_dir):
+    def __init__(self, images_dir, labels_dir, mode):
+        self.mode = mode
         images_dir = Path(images_dir)
         self.image_paths = sorted(images_dir.glob(hp.fold_arch))
         labels_dir = Path(labels_dir)
@@ -120,7 +121,10 @@ class MedData_train(torch.utils.data.Dataset):
             #     subjects.append(subject)
             subjects.append(subject)
 
-        subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
+        if self.mode == 'train':
+            subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
+        elif self.mode == 'test':
+            subjects_set = tio.SubjectsDataset(subjects, transform=None)
 
         if hp.use_queue:
             queue_dataset = Queue(

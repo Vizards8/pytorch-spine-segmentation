@@ -196,7 +196,7 @@ def train():
     #                           drop_last=False)
 
     print('Loading Dataset......\n')
-    full_dataset = MedData_train(hp.source_train_dir, hp.label_train_dir)
+    full_dataset = MedData_train(hp.source_train_dir, hp.label_train_dir, 'train')
     train_loader = DataLoader(full_dataset.dataset,
                               batch_size=args.batch,
                               shuffle=True,
@@ -204,10 +204,10 @@ def train():
                               drop_last=False,
                               num_workers=hp.num_workers)
 
-    full_dataset = MedData_train(hp.source_test_dir, hp.label_test_dir)
+    full_dataset = MedData_train(hp.source_test_dir, hp.label_test_dir, 'test')
     val_loader = DataLoader(full_dataset.dataset,
-                            batch_size=args.batch,
-                            shuffle=True,
+                            batch_size=1,
+                            shuffle=False,
                             pin_memory=True,
                             drop_last=False,
                             num_workers=hp.num_workers)
@@ -232,10 +232,9 @@ def train():
         total_train_loss = []
         total_train_IOU = []
 
+        model.train()
         loop_train = tqdm(enumerate(train_loader), total=len(train_loader))
         for i, batch in loop_train:
-
-            model.train()
 
             optimizer.zero_grad()
 
@@ -387,7 +386,12 @@ def train():
 
                 # Loss
                 outputs = model(x)
-                outputs = torch.sigmoid(outputs)
+                # outputs = torch.sigmoid(outputs)
+                outputs = torch.nn.functional.softmax(outputs, dim=1)
+                # ss = []
+                # for j in range(hp.out_class):
+                #     ss.append(round(outputs[0, j, 0, 440].item(), 3))
+                # print(ss)
                 val_loss = criterion(outputs, y)
                 val_iteration += 1
 
@@ -558,7 +562,7 @@ def test():
 
     model.to(device)
 
-    full_dataset = MedData_train(hp.source_test_dir, hp.label_test_dir)
+    full_dataset = MedData_train(hp.source_test_dir, hp.label_test_dir, 'test')
     val_loader = DataLoader(full_dataset.dataset,
                             batch_size=1,
                             shuffle=False,
@@ -589,7 +593,8 @@ def test():
             # y [BS,18,880,880,1]
 
             outputs = model(x)
-            outputs = torch.sigmoid(outputs)
+            # outputs = torch.sigmoid(outputs)
+            outputs = torch.nn.functional.softmax(outputs, dim=1)
 
             if hp.mode == '2d':
                 x = x.unsqueeze(4)
