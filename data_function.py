@@ -124,7 +124,7 @@ class MedData_train(torch.utils.data.Dataset):
         if self.mode == 'train':
             subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
         elif self.mode == 'test':
-            subjects_set = tio.SubjectsDataset(subjects, transform=None)
+            subjects_set = tio.SubjectsDataset(subjects, transform=self.transform())
 
         if hp.use_queue:
             queue_dataset = Queue(
