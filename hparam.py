@@ -16,7 +16,7 @@ class hparams:
     latest_checkpoint_file = 'checkpoint_latest.pt'
     gpu_nums = 1  # 多卡训练设置有几张GPU
     ckpt = None  # 用来断点继续训练，例如:'checkpoint_100.pt'
-    init_lr = 0.0001  # 0.002
+    init_lr = 0.0005  # 0.002
     scheduer_step_size = 20
     scheduer_gamma = 0.8
     debug = False
