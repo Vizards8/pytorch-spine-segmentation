@@ -24,23 +24,23 @@ def metrics(predict, label, out_class):
     acc = []
     for i in range(1, out_class):
         N = label.size(0)
-        indice = []
-        # 根据batch_size筛去全0label，有标签才计算评价指标
-        for j in range(N):
-            gt_true = torch.sum(label[j, i, :, :])
-            if gt_true:
-                indice.append(j)
-
-        if indice:
-            Dice_list.append(diceCoeffv2(predict[indice, i, :, :], label[indice, i, :, :]))
-            IOU_list.append(IOU(predict[indice, i, :, :], label[indice, i, :, :]))
-            FP_FN_rate_list = FP_FN_rate(predict[indice, i, :, :], label[indice, i, :, :])
-            false_positive_rate_list.append(FP_FN_rate_list[0])
-            false_negative_rate_list.append(FP_FN_rate_list[1])
-            # accu = pixel_accuracy(predict[indice, i, :, :], label[indice, i, :, :])
-            # if accu > 0.9:
-            #     print(f'slice id:{i}, acc:{accu}')
-            acc.append(pixel_accuracy(predict[indice, i, :, :], label[indice, i, :, :]))
+        # indices = []
+        # # 根据batch_size筛去全0label，有标签才计算评价指标
+        # for j in range(N):
+        #     gt_true = torch.sum(label[j, i, :, :])
+        #     if gt_true:
+        #         indice.append(j)
+        #
+        # if indices:
+        Dice_list.append(diceCoeffv2(predict[:, i, :, :], label[:, i, :, :]))
+        IOU_list.append(IOU(predict[:, i, :, :], label[:, i, :, :]))
+        FP_FN_rate_list = FP_FN_rate(predict[:, i, :, :], label[:, i, :, :])
+        false_positive_rate_list.append(FP_FN_rate_list[0])
+        false_negative_rate_list.append(FP_FN_rate_list[1])
+        # accu = pixel_accuracy(predict[indices, i, :, :], label[indices, i, :, :])
+        # if accu > 0.9:
+        #     print(f'slice id:{i}, acc:{accu}')
+        acc.append(pixel_accuracy(predict[:, i, :, :], label[:, i, :, :]))
     return mean(IOU_list), mean(Dice_list), mean(acc), mean(false_positive_rate_list), mean(false_negative_rate_list)
 
 

@@ -231,6 +231,7 @@ def train():
 
         total_train_loss = []
         total_train_IOU = []
+        total_train_dice = []
 
         model.train()
         loop_train = tqdm(enumerate(train_loader), total=len(train_loader))
@@ -289,6 +290,7 @@ def train():
             end_time = time.time()
             total_train_loss.append(loss.item())
             total_train_IOU.append(IOU.item())
+            total_train_dice.append(dice.item())
             loop_train.set_description(f'Train [{epoch}/{epochs}]')
             loop_train.set_postfix({
                 'loss': '{0:1.5f}'.format(loss.item()),
@@ -365,6 +367,7 @@ def train():
             total_valid_loss = []
             total_valid_acc = []
             total_valid_IOU = []
+            total_valid_dice = []
 
             for i, batch in loop_val:
                 # print(f"Batch: {i}/{len(val_loader)} epoch {epoch}")
@@ -415,6 +418,7 @@ def train():
                 total_valid_loss.append(val_loss.item())
                 total_valid_acc.append(acc.item())
                 total_valid_IOU.append(IOU.item())
+                total_valid_dice.append(dice.item())
                 loop_val.set_description(f'Valid [{epoch}/{epochs}]')
                 end_time = time.time()
                 loop_val.set_postfix({
@@ -462,10 +466,12 @@ def train():
         start_time = end_time
 
         # log compare train and validation
-        writer.add_scalars('Compare/Loss', {'train_loss': mean(total_train_loss),
-                                            'valid_train': mean(total_valid_loss)}, epoch)
+        writer.add_scalars('Compare/Loss', {'train_Loss': mean(total_train_loss),
+                                            'valid_Loss': mean(total_valid_loss)}, epoch)
         writer.add_scalars('Compare/IOU', {'train_IOU': mean(total_train_IOU),
                                            'valid_IOU': mean(total_valid_IOU)}, epoch)
+        writer.add_scalars('Compare/Dice', {'train_Dice': mean(total_train_dice),
+                                           'valid_Dice': mean(total_valid_dice)}, epoch)
 
     writer.close()
 
@@ -575,6 +581,8 @@ def test():
     model.eval()
 
     with torch.no_grad():
+        dice_list = []
+        IOU_list = []
         loop_test = tqdm(enumerate(val_loader), total=len(val_loader))
         for i, batch in loop_test:
             x = batch['source']['data']
@@ -595,6 +603,17 @@ def test():
             outputs = model(x)
             # outputs = torch.sigmoid(outputs)
             outputs = torch.nn.functional.softmax(outputs, dim=1)
+
+            # for metrics
+            label = onehot.mask2onehot(y.cpu(), hp.out_classlist)  # 转成one-hot
+            label = torch.FloatTensor(label).to(device)
+            predict = outputs.clone()
+            predict = onehot.onehot2mask(predict.cpu().detach().numpy())
+            predict = onehot.mask2onehot(predict, hp.out_classlist)
+            predict = torch.FloatTensor(predict).to(device)  # 转换为torch.tensor才能送进gpu
+            IOU, dice, acc, false_positive_rate, false_negative_rate = metrics(predict, label, hp.out_class)
+            dice_list.append(dice.item())
+            IOU_list.append(IOU.item())
 
             if hp.mode == '2d':
                 x = x.unsqueeze(4)
@@ -626,6 +645,13 @@ def test():
             output_image.save(os.path.join(hp.inference_dir, f"test-step-{epoch:04d}-predict_" + str(i) + hp.save_arch))
 
             loop_test.set_description(f'Epoch_Test ')
+
+        print(f'dice_max:{max(dice_list)}, id:{dice_list.index(max(dice_list))}')
+        print(f'dice_min:{min(dice_list)}, id:{dice_list.index(min(dice_list))}')
+        print(f'dice_mean:{sum(dice_list) / len(dice_list)}')
+        print(f'IOU_max:{max(IOU_list)}, id:{IOU_list.index(max(IOU_list))}')
+        print(f'IOU_min:{min(IOU_list)}, id:{IOU_list.index(min(IOU_list))}')
+        print(f'IOU_mean:{sum(IOU_list) / len(IOU_list)}')
 
     # znorm = ZNormalization()
     #

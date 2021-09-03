@@ -193,7 +193,7 @@ class MedData_train(torch.utils.data.Dataset):
                     ZNormalization(),
                 ])
         elif hp.mode == '2d':
-            if hp.aug:
+            if hp.mode == 'train':
                 training_transform = Compose([
                     CropOrPad((hp.crop_or_pad_size), padding_mode='reflect'),
                     # RandomMotion(),
