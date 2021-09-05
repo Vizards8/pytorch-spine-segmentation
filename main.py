@@ -473,6 +473,7 @@ def train():
         writer.add_scalars('Compare/Dice', {'train_Dice': mean(total_train_dice),
                                            'valid_Dice': mean(total_valid_dice)}, epoch)
 
+    print(f'Finish training: {epoch}/{epochs}')
     writer.close()
 
 
