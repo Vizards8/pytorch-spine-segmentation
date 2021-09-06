@@ -55,23 +55,28 @@ pytorch-spine-segmentation
 ### 调整超参
 * 如有必要，详见hparam.py
 
-### 重新拉取
-```bash
-git clone https://github.com/Vizards8/pytorch-spine-segmentation.git
-```
-
-### 安装环境
+### 安装环境(仅第一次，可保存不用反复安装)
 如在服务器上运行，须执行额外包安装:
 ```bash
 pip install torchio tensorboard
 ```
 
-### 前处理
+### 下载代码(仅第一次)
+```bash
+git clone https://github.com/Vizards8/pytorch-spine-segmentation.git -b v1.1
+```
+将`dataset.zip`放在`pytorch-spine-segmentation`根目录下
+```bash
+unzip dataset.zip
+```
+
+### 前处理(仅第一次)
 ```bash
 python preprocess.py
 ```
+运行结束后核对数量，slice_train:source/label各2016,slice_test:source/label各507
 
-### 训练模型
+### 训练模型(每次)
 ```bash
 cd ../mnt/pytorch-spine-segmentation/
 git reset --hard
