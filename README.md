@@ -58,7 +58,7 @@ pytorch-spine-segmentation
 ### 安装环境(仅第一次，可保存不用反复安装)
 如在服务器上运行，须执行额外包安装:
 ```bash
-pip install torchio tensorboard
+pip install torchio==0.18.45 tensorboard
 ```
 
 ### 下载代码(仅第一次)
@@ -81,8 +81,6 @@ python preprocess.py
 ### 训练模型(每次)
 ```bash
 cd ../mnt/pytorch-spine-segmentation/
-git reset --hard
-git pull
 nohup python main.py > runlog.txt 2>&1 &
 ```
 查看显卡占用，确保正常运行
