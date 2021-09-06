@@ -63,6 +63,7 @@ pip install torchio tensorboard
 
 ### 下载代码(仅第一次)
 ```bash
+cd ../mnt/
 git clone https://github.com/Vizards8/pytorch-spine-segmentation.git -b v1.1
 ```
 将`dataset.zip`放在`pytorch-spine-segmentation`根目录下
