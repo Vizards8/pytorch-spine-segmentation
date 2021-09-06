@@ -88,6 +88,12 @@ nohup python main.py > runlog.txt 2>&1 &
 nvidia-smi
 ```
 
+### tensorboard
+```bash
+cd ../mnt/pytorch-spine-segmentation/
+tensorboard --logdir logs
+```
+
 ### 压缩logs(均可)
 ```bash
 zip -r logs.zip logs/
