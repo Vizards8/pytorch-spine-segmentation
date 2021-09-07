@@ -123,6 +123,10 @@ def train():
             from models.two_d.unetpp import ResNet34UnetPlus
             model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
 
+        elif hp.model_name == 'UNet3p':
+            from models.two_d.UNet_3Plus import UNet_3Plus
+            model = UNet_3Plus(in_channels=hp.in_class, n_classes=hp.out_class)
+
         else:
             print('ERROR: No such model')
         # from models.two_d.fcn import FCN32s as fcn
@@ -529,6 +533,10 @@ def test():
         elif hp.model_name == 'UNetpp':
             from models.two_d.unetpp import ResNet34UnetPlus
             model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
+
+        elif hp.model_name == 'UNet3p':
+            from models.two_d.UNet_3Plus import UNet_3Plus
+            model = UNet_3Plus(in_channels=hp.in_class, n_classes=hp.out_class)
 
         else:
             print('ERROR: No such model')
