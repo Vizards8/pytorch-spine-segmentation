@@ -124,8 +124,8 @@ def train():
             model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
 
         elif hp.model_name == 'UNet3p':
-            from models.two_d.UNet_3Plus import UNet_3Plus
-            model = UNet_3Plus(in_channels=hp.in_class, n_classes=hp.out_class)
+            from models.two_d.UNet_3Plus import UNet_3Plus_DeepSup
+            model = UNet_3Plus_DeepSup(in_channels=hp.in_class, n_classes=hp.out_class)
 
         elif hp.model_name == 'MulResUNet':
             from models.two_d.multiresunet import MultiResUnet
@@ -539,8 +539,8 @@ def test():
             model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
 
         elif hp.model_name == 'UNet3p':
-            from models.two_d.UNet_3Plus import UNet_3Plus
-            model = UNet_3Plus(in_channels=hp.in_class, n_classes=hp.out_class)
+            from models.two_d.UNet_3Plus import UNet_3Plus_DeepSup
+            model = UNet_3Plus_DeepSup(in_channels=hp.in_class, n_classes=hp.out_class)
 
         elif hp.model_name == 'MulResUNet':
             from models.two_d.multiresunet import MultiResUnet
