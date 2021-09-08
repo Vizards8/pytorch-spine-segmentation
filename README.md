@@ -18,7 +18,7 @@
 
 ## 环境要求
 * pytorch 1.7
-* torchio <= 0.18.20
+* torchio <= 0.18.45
 * python >= 3.6
 
 
