@@ -119,9 +119,13 @@ def train():
             from models.two_d.deeplab2 import DeepLabv3_plus
             model = DeepLabv3_plus(nInputChannels=hp.in_class, n_classes=hp.out_class)
 
+        # elif hp.model_name == 'UNetpp':
+        #     from models.two_d.unetpp import ResNet34UnetPlus
+        #     model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
+
         elif hp.model_name == 'UNetpp':
-            from models.two_d.unetpp import ResNet34UnetPlus
-            model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
+            from models.two_d.UNet_Nested import UNet_Nested
+            model = UNet_Nested(in_channels=hp.in_class, n_classes=hp.out_class)
 
         elif hp.model_name == 'UNet3p':
             from models.two_d.UNet_3Plus import UNet_3Plus_DeepSup
@@ -130,6 +134,26 @@ def train():
         elif hp.model_name == 'MulResUNet':
             from models.two_d.multiresunet import MultiResUnet
             model = MultiResUnet(channels=hp.in_class, nclasses=hp.out_class)
+
+        elif hp.model_name == 'ENet':
+            from models.two_d.ENet import ENet
+            model = ENet(in_channels=hp.in_class, num_classes=hp.out_class)
+
+        elif hp.model_name == 'GCN':
+            from models.two_d.GCN import GCN
+            model = GCN(in_channels=hp.in_class, num_classes=hp.out_class)
+
+        elif hp.model_name == 'ResUNet':
+            from models.two_d.ResUNet import ResUnet
+            model = ResUnet(channel=hp.in_class, num_classes=hp.out_class)
+
+        elif hp.model_name == 'ResUNetpp':
+            from models.two_d.ResUNetpp import ResUnetPlusPlus
+            model = ResUnetPlusPlus(channel=hp.in_class, num_classes=hp.out_class)
+
+        elif hp.model_name == 'TransUNet':
+            from models.two_d.TransUNet import TransUnet
+            model = TransUnet(img_dim=512, in_channels=hp.in_class, classes=hp.out_class, patch_size=1)
 
         else:
             print('ERROR: No such model')

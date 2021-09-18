@@ -153,6 +153,20 @@ tar -cvf logs.tar.gz logs/
     * 总结：validation颜色搅在一起，很奇怪，train没改，所以分割得很好也不奇怪
 * 9.3 Tag_v1.1:v1.0+test没有aug+metrics去除indices
     * hairu跑的all，明天看结果
+* 9.16-17
+    * ESPNet:BN层维度不一样
+    * CaraNet:56/55 not match
+    * DANet:1*20*3*3
+    * ENet:
+        * `A Deep Neural Network Architecture for Real-Time Semantic Segmentation`
+    * GCN:
+        * `Large Kernel Matters——Improve Semantic Segmentation by Global Convolutional Network`
+    * ResUNet:
+        * `Road Extraction by Deep Residual U-Net`
+    * ResUNetpp:
+        * `ResUNet++: An Advanced Architecture for MedicalImage Segmentation`
+    * TransUNet:
+        * `TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation`
         
         
 ## Todo
