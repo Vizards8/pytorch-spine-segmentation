@@ -155,8 +155,12 @@ tar -cvf logs.tar.gz logs/
     * hairu跑的all，明天看结果
 * 9.16-17
     * ESPNet:BN层维度不一样
-    * CaraNet:56/55 not match
+    * CaraNet:
+        * `CaraNet: Context Axial Reverse Attention Network for Segmentation of Small Medical Objects`
+        * 添加final layer解决20分类的问题，对应的需要改upsample的scale_factor为1/2
     * DANet:1*20*3*3
+    * GCN:后面loss不降了，dice只有0.26左右，全黑
+    * ENet:
     * ENet:
         * `A Deep Neural Network Architecture for Real-Time Semantic Segmentation`
     * GCN:
@@ -167,7 +171,20 @@ tar -cvf logs.tar.gz logs/
         * `ResUNet++: An Advanced Architecture for MedicalImage Segmentation`
     * TransUNet:
         * `TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation`
-        
+* 9.25
+    * Res2Net最后三层注释了，因为没用到
+    * PSPNet对比实验:
+        * ResNet34:
+            * /8只有三个upsample
+            * conv2d->/2, maxpool->/2, block2->/2 --> batchsize=4.dice=0.85
+        * Res2Net:09250202
+            * PSPNet修改三处，有注释
+            * maxpool->/2, block2->/2, block3->/2 --> 模型过大:batchsize=1
+        * Res2Net:09260128
+            * conv2d->/2, maxpool->/2, block2->/2 --> batchsize=2,dice=0.8
+        * ResNet50
+        * ResNet101
+       
         
 ## Todo
 - [ ] 切片880*880过大，不合理，需要trick
