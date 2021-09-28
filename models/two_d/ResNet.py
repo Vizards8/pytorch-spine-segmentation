@@ -3,23 +3,23 @@ import math
 import torch
 
 
-def conv3x3(in_planes, out_planes, stride=1):
+def conv3x3(in_planes, out_planes, stride=1, dilation=1):
     """
         3x3 convolution with padding
     """
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False)
+                     padding=dilation, dilation=dilation, bias=False)
 
 
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, dilation=1):
         super(BasicBlock, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.conv1 = conv3x3(inplanes, planes, stride=stride, dilation=dilation)
         self.bn1 = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes)
+        self.conv2 = conv3x3(planes, planes, dilation=dilation)
         self.bn2 = nn.BatchNorm2d(planes)
         self.downsample = downsample
         self.stride = stride
@@ -46,12 +46,12 @@ class BasicBlock(nn.Module):
 class Bottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, dilation=1):
         super(Bottleneck, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
-                               padding=1, bias=False)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, dilation=dilation,
+                               padding=dilation, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
@@ -84,7 +84,7 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
     # ResNet50 with two branches
-    def __init__(self, layers=[3, 4, 6, 3]):
+    def __init__(self, block=Bottleneck, layers=[3, 4, 6, 3]):
         # self.inplanes = 128
         self.inplanes = 64
         super(ResNet, self).__init__()
@@ -95,10 +95,12 @@ class ResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer1 = self._make_layer(Bottleneck, 64, layers[0])
-        self.layer2 = self._make_layer(Bottleneck, 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(Bottleneck, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(Bottleneck, 512, layers[3], stride=2)
+        self.layer1 = self._make_layer(block, 64, layers[0])
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
+        # self.layer3 = self._make_layer(block, 256, layers[2], stride=1, dilation=2)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
+        # self.layer4 = self._make_layer(block, 512, layers[3], stride=1, dilation=4)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -108,7 +110,7 @@ class ResNet(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def _make_layer(self, block, planes, blocks, stride=1):
+    def _make_layer(self, block, planes, blocks, stride=1, dilation=1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
@@ -122,7 +124,7 @@ class ResNet(nn.Module):
         layers.append(block(self.inplanes, planes, stride, downsample))
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
+            layers.append(block(self.inplanes, planes, dilation=dilation))
 
         return nn.Sequential(*layers)
 
@@ -141,15 +143,17 @@ class ResNet(nn.Module):
 
 
 if __name__ == '__main__':
+    # ResNet34
+    # ras = ResNet(block=BasicBlock, layers=[3, 4, 6, 3]).cuda()
     # ResNet50
     ras = ResNet(layers=[3, 4, 6, 3]).cuda()
     # ResNet101
     # ras = ResNet(layers=[3, 4, 23, 3]).cuda()
-    input_tensor = torch.randn(1, 1, 224, 224).cuda()
+    # input_tensor = torch.randn(1, 1, 176, 176).cuda()
     # input_tensor = input_tensor.repeat(1, 3, 1, 1)
 
     from torchsummary import summary
 
-    print(summary(ras, (1, 224, 224)))
+    print(summary(ras, (1, 176, 176)))
     out = ras(input_tensor)
     print(out[0].shape)
