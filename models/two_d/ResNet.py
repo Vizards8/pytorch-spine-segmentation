@@ -149,7 +149,7 @@ if __name__ == '__main__':
     ras = ResNet(layers=[3, 4, 6, 3]).cuda()
     # ResNet101
     # ras = ResNet(layers=[3, 4, 23, 3]).cuda()
-    # input_tensor = torch.randn(1, 1, 176, 176).cuda()
+    input_tensor = torch.randn(1, 1, 176, 176).cuda()
     # input_tensor = input_tensor.repeat(1, 3, 1, 1)
 
     from torchsummary import summary
