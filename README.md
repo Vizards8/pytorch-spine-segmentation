@@ -65,7 +65,7 @@ pip install torchio==0.18.45 tensorboard
 
 ### 下载代码(仅第一次)
 ```bash
-cd ../mnt/
+cd /mnt/
 git clone https://github.com/Vizards8/pytorch-spine-segmentation.git -b v1.1
 cd pytorch-spine-segmentation/
 ```
@@ -82,7 +82,7 @@ python preprocess.py
 
 ### 训练模型(每次)
 ```bash
-cd ../mnt/pytorch-spine-segmentation/
+cd /mnt/pytorch-spine-segmentation/
 nohup python main.py > runlog.txt 2>&1 &
 ```
 查看显卡占用，确保正常运行
@@ -92,7 +92,7 @@ nvidia-smi
 
 ### tensorboard
 ```bash
-cd ../mnt/pytorch-spine-segmentation/
+cd /mnt/pytorch-spine-segmentation/
 tensorboard --logdir logs
 ```
 
@@ -140,11 +140,12 @@ tar -cvf logs.tar.gz logs/
     * lr应该是多少
 * 9.2 Tag_v1.0:softmax+无loss权重+0.0005(0.0001不行)+train/valid都有aug，看着还行
     * lr0.0001，小样本实验，loss:0.49/0.75,IOU:0.61/0.25，上下有别的label的边
-    * lr0.0005，me跑的0.25，0.8/10epoch，50epoch，loss:0.46/0.50,IOU:0.63/0.55，对比下面貌似更好看一点
-    * me跑的0.25，50epoch，loss:0.46/0.51,IOU:0.63/0.54
-    * hairu跑的all，晚上看结果
-        - [x] 12h,30epoch,loss:0.2331/0.2225,IOU:0.563/0.5855(没写错)
-        - [x] 1d10h,80epoch,loss:0.1903/0.1975,IOU:0.6291/0.6246
+    * lr0.0005
+        * me跑的0.25，0.8/10epoch，50epoch，loss:0.46/0.50,IOU:0.63/0.55，对比下面貌似更好看一点
+        * me跑的0.25，50epoch，loss:0.46/0.51,IOU:0.63/0.54
+        * hairu跑的all，晚上看结果
+            - [x] 12h,30epoch,loss:0.2331/0.2225,IOU:0.563/0.5855(没写错)
+            - [x] 1d10h,80epoch,loss:0.1903/0.1975,IOU:0.6291/0.6246
 * 9.2 测试：softmax+无loss权重+0.001(0.0005不行)+去掉valid的aug
     * lr0.0005，train/valid相差很大，我不懂，100epoch，loss:0.58/0.81,IOU:0.52/0.16
     * lr0.002，可以，就是收敛有点慢，78epoch，valid_IOU只有0.2
@@ -154,37 +155,95 @@ tar -cvf logs.tar.gz logs/
 * 9.3 Tag_v1.1:v1.0+test没有aug+metrics去除indices
     * hairu跑的all，明天看结果
 * 9.16-17
-    * ESPNet:BN层维度不一样
+    * ESPNet:
+        * `2018: ESPNet: Efficient Spatial Pyramid of Dilated Convolutions for Semantic Segmentation`, `296 Ciatations`
+        * 好复杂啊，实现不了，告辞
     * CaraNet:
-        * `CaraNet: Context Axial Reverse Attention Network for Segmentation of Small Medical Objects`
+        * `CaraNet: Context Axial Reverse Attention Network for Segmentation of Small Medical Objects`, `0 Citations`
         * 添加final layer解决20分类的问题，对应的需要改upsample的scale_factor为1/2
-    * DANet:1*20*3*3
-    * GCN:后面loss不降了，dice只有0.26左右，全黑
     * ENet:
-    * ENet:
-        * `A Deep Neural Network Architecture for Real-Time Semantic Segmentation`
+        * `2016: A Deep Neural Network Architecture for Real-Time Semantic Segmentation`
     * GCN:
-        * `Large Kernel Matters——Improve Semantic Segmentation by Global Convolutional Network`
+        * `2017: Large Kernel Matters——Improve Semantic Segmentation by Global Convolutional Network`
+        * 后面loss不降了，dice只有0.26左右，全黑
     * ResUNet:
         * `Road Extraction by Deep Residual U-Net`
     * ResUNetpp:
         * `ResUNet++: An Advanced Architecture for MedicalImage Segmentation`
     * TransUNet:
         * `TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation`
-* 9.25
+* 9.25-27
     * Res2Net最后三层注释了，因为没用到
     * PSPNet对比实验:
         * ResNet34:
             * /8只有三个upsample
             * conv2d->/2, maxpool->/2, block2->/2 --> batchsize=4.dice=0.85
-        * Res2Net:09250202
+        * Res2Net101:09250202
             * PSPNet修改三处，有注释
             * maxpool->/2, block2->/2, block3->/2 --> 模型过大:batchsize=1
-        * Res2Net:09260128
+        * Res2Net101:09260128
             * conv2d->/2, maxpool->/2, block2->/2 --> batchsize=2,dice=0.8
-        * ResNet50
-        * ResNet101
-       
+        * Res2Net50:09262300
+            * conv2d->/2, maxpool->/2, block2->/2 --> batchsize=2,dice=0.8
+        * ResNet101:09261258
+            * conv2d->/2, maxpool->/2, block2->/2 --> batchsize=2,dice<0.65
+        * ResNet34:09271013
+            * conv2d->/2, maxpool->/2, block2->/2 --> batchsize=4,dice=0.8
+        * ResNet101:09271605
+            * dilation -->1/1/2/4
+            * conv2d->/2, maxpool->/2, block2->/2 --> batchsize=2,dice=0.74
+* 9.28-30
+    * F.interpolate(x, size=(h, w), mode='bilinear', align_corners=True)
+    * assert layers in [50, 101, 152]
+    * PraNet:
+        * `PraNet: Parallel Reverse Attention Network for Polyp Segmentation`, `69 Citations`
+        * Res2Net50:0.746
+        * Res2Net101:0.735
+    * SegFormer:
+        * `SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers`
+        * 是我想多了，输出1/4，我也不知道为啥
+    * DANet:
+        * `2019: Dual Attention Network for Scene Segmentation`, `1342 Citations`
+        * ResNet50:0.81
+        * ResNet101:0.83
+        * upsample直接一步到位
+    * CCNet:
+        * `2019: CCNet: Criss-cross attention for semantic segmentation`, `593 Citations`
+        * from inplace_abn import InPlaceABN, InPlaceABNSync
+        * 没有上采样，我不理解;我自己加上了，不知道成不成
+        * ResNet101 + recurrence=2:waiting
+    * ANNNet:
+        * ` Automatic detection of coronavirus disease (COVID-19) using X-ray images and deep convolutional neural networks`, `579 Citations`
+        * ResNet101:waiting
+        * upsample直接一步到位
+    * GFF:
+        * `2020: Gated Fully Fusion for Semantic Segmentation`, `15 Citations`
+        * 本身成绩一般, Cityscapes test:82.3%, #20
+    * Inf-Net:
+        * `Inf-Net: Automatic COVID-19 Lung Infection Segmentation from CT Images`, `185 Citations`
+        * Res2Net50:0.75
+        * Res2Net101:0.81
+    * EMANet:
+        * `Expectation-Maximization Attention Networks for Semantic Segmentation`, `149 Citations`
+        * ResNet101:0.85
+    * OCNet:
+        * `2018: OCNet: Object Context Network for Scene Parsing`, `287 Citations`
+        * ResNet101:waiting
+    * ANN:
+        * `2019: Asymmetric Non-Local Neural Networks for Semantic Segmentation`, `188 Citations`
+        * ResNet101:
+    * DenseASPP:
+        * `2018: DenseASPP for Semantic Segmentation in Street Scenes`, `341 Citations`
+        * DenseASPP169:0.695
+        * DenseASPP201:waiting
+    * PSANet:
+        * `2018: PSANet: Point-wise Spatial Attention Network for Scene Parsing`, `404 Citations`
+        * 加了个lib_psa, 这个除法还蛮奇怪的
+        * ResNet101:0.85
+    * BiSeNetv2:
+        * `2020: BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation`, `57 Citations`
+        * 不清楚backbone:waiting
+        
         
 ## Todo
 - [ ] 切片880*880过大，不合理，需要trick
