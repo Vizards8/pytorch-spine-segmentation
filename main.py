@@ -4,9 +4,10 @@ from hparam import hparams as hp
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 devices = [i for i in range(hp.gpu_nums)]
 
-import time
+import time, json
 import argparse
 import numpy as np
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -153,7 +154,69 @@ def train():
 
         elif hp.model_name == 'TransUNet':
             from models.two_d.TransUNet import TransUnet
-            model = TransUnet(img_dim=512, in_channels=hp.in_class, classes=hp.out_class, patch_size=1)
+            model = TransUnet(img_dim=880, in_channels=hp.in_class, classes=hp.out_class, patch_size=1)
+
+        elif hp.model_name == 'SwinUNet':
+            from models.two_d.SwinUNet import SwinTransformerSys
+            model = SwinTransformerSys(img_size=512, in_chans=hp.in_class, num_classes=hp.out_class, patch_size=1,
+                                       window_size=8)
+
+        elif hp.model_name == 'MedT':
+            from models.two_d.MedT import medt_net
+            model = medt_net(img_size=512, num_classes=hp.out_class, imgchan=hp.in_class)
+
+        elif hp.model_name == 'nnUNet':
+            from models.two_d.nnUNet import Generic_UNet
+            model = Generic_UNet(input_channels=hp.in_class, base_num_features=24, num_classes=hp.out_class, num_pool=1,
+                                 deep_supervision=False)
+
+        elif hp.model_name == 'CaraNet':
+            from models.two_d.CaraNet import caranet
+            model = caranet(num_classes=hp.out_class)
+
+        elif hp.model_name == 'PraNet':
+            from models.two_d.PraNet import PraNet
+            model = PraNet(num_classes=hp.out_class)
+
+        elif hp.model_name == 'DANet':
+            from models.two_d.DANet import DANet
+            model = DANet(nclass=hp.out_class)
+
+        elif hp.model_name == 'InfNet':
+            from models.two_d.InfNet import Inf_Net
+            model = Inf_Net(n_class=hp.out_class)
+
+        elif hp.model_name == 'EMANet':
+            from models.two_d.EMANet import EMANet
+            model = EMANet(n_classes=hp.out_class, n_layers=101)
+
+        elif hp.model_name == 'DenseASPP':
+            from models.two_d.DenseASPP import DenseASPP
+            model = DenseASPP(n_class=hp.out_class)
+
+        elif hp.model_name == 'CCNet':
+            from models.two_d.CCNet import CCNet
+            model = CCNet(num_classes=hp.out_class, recurrence=2)
+
+        elif hp.model_name == 'OCNet':
+            from models.two_d.OCNet import OCNet
+            model = OCNet(num_classes=hp.out_class)
+
+        elif hp.model_name == 'ANN':
+            from models.two_d.ANN import asymmetric_non_local_network
+            model = asymmetric_non_local_network(num_classes=hp.out_class)
+
+        elif hp.model_name == 'PSANet':
+            from models.two_d.PSANet import PSANet
+            crop_h = crop_w = hp.crop_or_pad_size[0]
+            mask_h = 2 * ((crop_h - 1) // (8 * 2) + 1) - 1
+            mask_w = 2 * ((crop_w - 1) // (8 * 2) + 1) - 1
+            model = PSANet(classes=hp.out_class, mask_h=mask_h, mask_w=mask_w)
+
+        elif hp.model_name == 'BiSeNetv2':
+            from models.two_d.BiSeNetv2 import BiSeNetV2
+            model = BiSeNetV2(n_classes=20)
+
 
         else:
             print('ERROR: No such model')
@@ -503,7 +566,7 @@ def train():
         writer.add_scalars('Compare/IOU', {'train_IOU': mean(total_train_IOU),
                                            'valid_IOU': mean(total_valid_IOU)}, epoch)
         writer.add_scalars('Compare/Dice', {'train_Dice': mean(total_train_dice),
-                                           'valid_Dice': mean(total_valid_dice)}, epoch)
+                                            'valid_Dice': mean(total_valid_dice)}, epoch)
 
     print(f'Finish training: {epoch}/{epochs}')
     writer.close()
@@ -520,7 +583,8 @@ def test():
     torch.backends.cudnn.enabled = args.cudnn_enabled
     torch.backends.cudnn.benchmark = args.cudnn_benchmark
 
-    os.makedirs(hp.inference_dir, exist_ok=True)
+    inference_dir = os.path.join(hp.inference_dir, hp.model_name + '_' + hp.latest_checkpoint_file[-6:-3])
+    os.makedirs(inference_dir, exist_ok=True)
 
     if hp.mode == '2d':
         if hp.model_name == 'SegNet':
@@ -554,13 +618,17 @@ def test():
             from models.two_d.R2AttU_Net import R2AttU_Net
             model = R2AttU_Net(img_ch=hp.in_class, output_ch=hp.out_class)
 
-        elif hp.model_name == 'DeepLabv3':
+        elif hp.model_name == 'DeepLabv3p':
             from models.two_d.deeplab2 import DeepLabv3_plus
             model = DeepLabv3_plus(nInputChannels=hp.in_class, n_classes=hp.out_class)
 
+        # elif hp.model_name == 'UNetpp':
+        #     from models.two_d.unetpp import ResNet34UnetPlus
+        #     model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
+
         elif hp.model_name == 'UNetpp':
-            from models.two_d.unetpp import ResNet34UnetPlus
-            model = ResNet34UnetPlus(num_channels=hp.in_class, num_class=hp.out_class)
+            from models.two_d.UNet_Nested import UNet_Nested
+            model = UNet_Nested(in_channels=hp.in_class, n_classes=hp.out_class)
 
         elif hp.model_name == 'UNet3p':
             from models.two_d.UNet_3Plus import UNet_3Plus_DeepSup
@@ -569,6 +637,86 @@ def test():
         elif hp.model_name == 'MulResUNet':
             from models.two_d.multiresunet import MultiResUnet
             model = MultiResUnet(channels=hp.in_class, nclasses=hp.out_class)
+
+        elif hp.model_name == 'ENet':
+            from models.two_d.ENet import ENet
+            model = ENet(in_channels=hp.in_class, num_classes=hp.out_class)
+
+        elif hp.model_name == 'GCN':
+            from models.two_d.GCN import GCN
+            model = GCN(in_channels=hp.in_class, num_classes=hp.out_class)
+
+        elif hp.model_name == 'ResUNet':
+            from models.two_d.ResUNet import ResUnet
+            model = ResUnet(channel=hp.in_class, num_classes=hp.out_class)
+
+        elif hp.model_name == 'ResUNetpp':
+            from models.two_d.ResUNetpp import ResUnetPlusPlus
+            model = ResUnetPlusPlus(channel=hp.in_class, num_classes=hp.out_class)
+
+        elif hp.model_name == 'TransUNet':
+            from models.two_d.TransUNet import TransUnet
+            model = TransUnet(img_dim=880, in_channels=hp.in_class, classes=hp.out_class, patch_size=1)
+
+        elif hp.model_name == 'SwinUNet':
+            from models.two_d.SwinUNet import SwinTransformerSys
+            model = SwinTransformerSys(img_size=880, in_chans=hp.in_class, num_classes=hp.out_class, patch_size=1,
+                                       window_size=5)
+
+        elif hp.model_name == 'CaraNet':
+            from models.two_d.CaraNet import caranet
+            model = caranet(num_classes=hp.out_class)
+
+        elif hp.model_name == 'PraNet_Res2Net50':
+            from models.two_d.PraNet_Res2Net50 import PraNet
+            model = PraNet(num_classes=hp.out_class)
+
+        elif hp.model_name == 'PraNet_Res2Net101':
+            from models.two_d.PraNet_Res2Net101 import PraNet
+            model = PraNet(num_classes=hp.out_class)
+
+        elif hp.model_name == 'DANet':
+            from models.two_d.DANet import DANet
+            model = DANet(nclass=hp.out_class)
+
+        elif hp.model_name == 'InfNet_Res2Net50':
+            from models.two_d.InfNet_Res2Net50 import Inf_Net
+            model = Inf_Net(n_class=hp.out_class)
+
+        elif hp.model_name == 'InfNet_Res2Net101':
+            from models.two_d.InfNet_Res2Net101 import Inf_Net
+            model = Inf_Net(n_class=hp.out_class)
+
+        elif hp.model_name == 'EMANet':
+            from models.two_d.EMANet import EMANet
+            model = EMANet(n_classes=hp.out_class, n_layers=101)
+
+        elif hp.model_name == 'DenseASPP_Dense169':
+            from models.two_d.DenseASPP_Dense169 import DenseASPP
+            model = DenseASPP(n_class=hp.out_class)
+
+        elif hp.model_name == 'CCNet':
+            from models.two_d.CCNet import CCNet
+            model = CCNet(num_classes=hp.out_class, recurrence=2)
+
+        elif hp.model_name == 'OCNet':
+            from models.two_d.OCNet import OCNet
+            model = OCNet(num_classes=hp.out_class)
+
+        elif hp.model_name == 'ANN':
+            from models.two_d.ANN import asymmetric_non_local_network
+            model = asymmetric_non_local_network(num_classes=hp.out_class)
+
+        elif hp.model_name == 'PSANet':
+            from models.two_d.PSANet import PSANet
+            crop_h = crop_w = hp.crop_or_pad_size[0]
+            mask_h = 2 * ((crop_h - 1) // (8 * 2) + 1) - 1
+            mask_w = 2 * ((crop_w - 1) // (8 * 2) + 1) - 1
+            model = PSANet(classes=hp.out_class, mask_h=mask_h, mask_w=mask_w)
+
+        elif hp.model_name == 'BiSeNetv2':
+            from models.two_d.BiSeNetv2 import BiSeNetV2
+            model = BiSeNetV2(n_classes=20)
 
         else:
             print('ERROR: No such model')
@@ -623,6 +771,7 @@ def test():
 
     with torch.no_grad():
         dice_list = []
+        dice_class_list = [[] for i in range(hp.out_class - 1)]  # 背景不算
         IOU_list = []
         loop_test = tqdm(enumerate(val_loader), total=len(val_loader))
         for i, batch in loop_test:
@@ -653,7 +802,11 @@ def test():
             predict = onehot.mask2onehot(predict, hp.out_classlist)
             predict = torch.FloatTensor(predict).to(device)  # 转换为torch.tensor才能送进gpu
             IOU, dice, acc, false_positive_rate, false_negative_rate = metrics(predict, label, hp.out_class)
-            dice_list.append(dice.item())
+
+            # dice_list.append(dice.item())
+            for class_id in range(hp.out_class - 1):
+                dice_class_list[class_id].append(dice[class_id])
+            dice_list.append(mean(dice).item())
             IOU_list.append(IOU.item())
 
             if hp.mode == '2d':
@@ -675,24 +828,31 @@ def test():
             # x [1,880,880,1]
             # y [1,880,880,1]
             # outputs [1,880,880,1]
-            source_image = torchio.ScalarImage(tensor=x, affine=affine)
-            source_image.save(os.path.join(hp.inference_dir, f"test-step-{epoch:04d}-source_" + str(i) + hp.save_arch))
+            # source_image = torchio.ScalarImage(tensor=x, affine=affine)
+            source_image = torchio.ScalarImage(tensor=x)
+            source_image.save(os.path.join(inference_dir, f"test-step-{epoch:04d}-source_" + str(i) + hp.save_arch))
             # source_image.save(os.path.join(args.output_dir,("step-{}-source.mhd").format(epoch)))
 
-            label_image = torchio.ScalarImage(tensor=y, affine=affine)
-            label_image.save(os.path.join(hp.inference_dir, f"test-step-{epoch:04d}-gt_" + str(i) + hp.save_arch))
+            # label_image = torchio.ScalarImage(tensor=y, affine=affine)
+            label_image = torchio.ScalarImage(tensor=y)
+            label_image.save(os.path.join(inference_dir, f"test-step-{epoch:04d}-gt_" + str(i) + hp.save_arch))
 
-            output_image = torchio.ScalarImage(tensor=outputs, affine=affine)
-            output_image.save(os.path.join(hp.inference_dir, f"test-step-{epoch:04d}-predict_" + str(i) + hp.save_arch))
+            # output_image = torchio.ScalarImage(tensor=outputs, affine=affine)
+            output_image = torchio.ScalarImage(tensor=outputs)
+            output_image.save(os.path.join(inference_dir, f"test-step-{epoch:04d}-predict_" + str(i) + hp.save_arch))
 
             loop_test.set_description(f'Epoch_Test ')
 
         print(f'dice_max:{max(dice_list)}, id:{dice_list.index(max(dice_list))}')
         print(f'dice_min:{min(dice_list)}, id:{dice_list.index(min(dice_list))}')
         print(f'dice_mean:{sum(dice_list) / len(dice_list)}')
+        # for class_id in range(hp.out_class - 1):
+        #     print(f'dice_class{class_id + 1}:{mean(dice_class_list[class_id])}')
         print(f'IOU_max:{max(IOU_list)}, id:{IOU_list.index(max(IOU_list))}')
         print(f'IOU_min:{min(IOU_list)}, id:{IOU_list.index(min(IOU_list))}')
         print(f'IOU_mean:{sum(IOU_list) / len(IOU_list)}')
+
+    return mean_class(dice_class_list), dice_list
 
     # znorm = ZNormalization()
     #
@@ -758,4 +918,33 @@ if __name__ == '__main__':
     if hp.train_or_test == 'train':
         train()
     elif hp.train_or_test == 'test':
-        test()
+        # 记录每个class的dice
+        dice_class = []
+        # 记录每张test图片的dice
+        dice_perpic = []
+        # ignore
+        ignore = ['R2UNet', 'SegNet']
+
+        with open('./model_ckpt.json', 'r') as f:
+            model_ckpt = f.read()
+            model_ckpt = json.loads(model_ckpt)
+
+            for i in model_ckpt.values():
+                if i['model_name'] in ignore:
+                    continue
+                hp.model_name = i['model_name']
+                hp.latest_checkpoint_file = i['ckpt']
+
+                res1, res2 = test()
+                dice_class.append([hp.model_name] + res1 + [mean(res1)])
+                dice_perpic.append([hp.model_name] + res2)
+
+        # 分别计算每个class的dice写入csv
+        dice_class = pd.DataFrame(dice_class, columns=(['model_name'] + [i + 1 for i in range(hp.out_class - 1)] + ['mean']))
+        dice_class.to_csv(os.path.join(hp.inference_dir, 'Dice_class.csv'))
+
+        # 保存所有test样例的dice
+        # model_num = len(dice_perpic)
+        dice_perpic = np.array(dice_perpic).T
+        dice_perpic = pd.DataFrame(dice_perpic)
+        dice_perpic.to_csv(os.path.join(hp.inference_dir, 'Dice_perpic.csv'))
