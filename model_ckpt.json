@@ -1,0 +1,70 @@
+{
+    "0": {
+        "model_name": "AttUNet",
+        "ckpt": "AttUNet_checkpoint_0110.pt"
+    },
+    "1": {
+        "model_name": "DANet",
+        "ckpt": "DANet_checkpoint_0090.pt"
+    },
+    "2": {
+        "model_name": "DeepLabv3p",
+        "ckpt": "DeepLabv3p_checkpoint_0080.pt"
+    },
+    "3": {
+        "model_name": "DenseASPP_Dense169",
+        "ckpt": "DenseASPP_Dense169_checkpoint_0110.pt"
+    },
+    "4": {
+        "model_name": "EMANet",
+        "ckpt": "EMANet_checkpoint_0080.pt"
+    },
+    "5": {
+        "model_name": "InfNet_Res2Net50",
+        "ckpt": "InfNet_Res2Net50_checkpoint_0010.pt"
+    },
+    "6": {
+        "model_name": "InfNet_Res2Net101",
+        "ckpt": "InfNet_Res2Net101_checkpoint_0090.pt"
+    },
+    "7": {
+        "model_name": "MiniSeg",
+        "ckpt": "MiniSeg_checkpoint_0160.pt"
+    },
+    "8": {
+        "model_name": "PraNet_Res2Net50",
+        "ckpt": "PraNet_Res2Net50_checkpoint_0120.pt"
+    },
+    "9": {
+        "model_name": "PraNet_Res2Net101",
+        "ckpt": "PraNet_Res2Net101_checkpoint_0220.pt"
+    },
+    "10": {
+        "model_name": "PSANet",
+        "ckpt": "PSANet_checkpoint_0110.pt"
+    },
+    "11": {
+        "model_name": "PSPNet",
+        "ckpt": "PSPNet_checkpoint_0120.pt"
+    },
+    "12": {
+        "model_name": "R2UNet",
+        "ckpt": "R2UNet_checkpoint_0060.pt"
+    },
+    "13": {
+        "model_name": "ResUNetpp",
+        "ckpt": "ResUNetpp_checkpoint_0110.pt"
+    },
+    "14": {
+        "model_name": "SegNet",
+        "ckpt": "SegNet_checkpoint_0086.pt"
+    },
+    "15": {
+        "model_name": "TransUNet",
+        "ckpt": "TransUNet_checkpoint_0106.pt"
+    },
+    "16": {
+        "model_name": "UNet",
+        "ckpt": "UNet_checkpoint_0140.pt"
+    }
+}
