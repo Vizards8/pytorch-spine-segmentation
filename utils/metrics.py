@@ -41,7 +41,8 @@ def metrics(predict, label, out_class):
         # if accu > 0.9:
         #     print(f'slice id:{i}, acc:{accu}')
         acc.append(pixel_accuracy(predict[:, i, :, :], label[:, i, :, :]))
-    return mean(IOU_list), mean(Dice_list), mean(acc), mean(false_positive_rate_list), mean(false_negative_rate_list)
+    # return mean(IOU_list), mean(Dice_list), mean(acc), mean(false_positive_rate_list), mean(false_negative_rate_list)
+    return mean(IOU_list), Dice_list, mean(acc), mean(false_positive_rate_list), mean(false_negative_rate_list)
 
 
 def mean(list):
@@ -49,6 +50,18 @@ def mean(list):
     if not len(list):
         return 0
     return sum(list) / len(list)
+
+
+def mean_class(list):
+    """分别计算每个class平均值，返回list"""
+    res = []
+    for i in list:
+        if not len(i):
+            print('Warning class missing!')
+            res.append(0)
+        else:
+            res.append(mean(i).item())
+    return res
 
 
 def batch_pix_accuracy(predict, target):
