@@ -8,10 +8,10 @@ class hparams:
     # 剩下的就是训练集的个数
     see_predict = False
     batch_size = 4  # 多卡训练，例如：2张3090,2*4=8
-    model_name = 'TransUNet'
-    # 'UNet' 'MiniSeg' 'PSPNet' 'AttUNet'  'DeepLabv3' 'ResUNetpp'  'R2UNet' 'SegNet'
-    # 'ENet' 'GCN' 'ResUNet' 'TransUNet'
-    # 'R2AttUNet' 'MulResUNet'
+    model_name = 'UNet'
+    # 'UNet', 'MiniSeg', 'PSPNet', 'AttUNet',  'DeepLabv3p', 'ResUNetpp', 'TransUNet', 'R2UNet', 'SegNet', 'PraNet_Res2Net50', 'PraNet_Res2Net101'
+    # 'nnUNet', 'DANet', 'EMANet', 'InfNet_Res2Net50', 'InfNet_Res2Net101', 'DenseASPP_Dense169', 'CCNet', 'OCNet', 'ANN', 'PSANet', 'BiSeNetv2'
+    # 'R2AttUNet', 'MulResUNet', 'GCN', 'ENet', 'ResUNet', 'SwinUNet', 'MedT', 'CaraNet'
 
     output_dir = 'logs'
     inference_dir = 'results'
