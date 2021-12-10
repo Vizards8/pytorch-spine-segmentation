@@ -210,3 +210,9 @@ class AttU_Net(nn.Module):
         d1 = self.Conv_1x1(d2)
 
         return d1
+
+if __name__ == '__main__':
+    from torchstat import stat
+    # 导入模型，输入一张输入图片的尺寸
+    model = AttU_Net(img_ch=1, output_ch=20)
+    stat(model, (1, 880, 880))

@@ -421,8 +421,25 @@ class TransUnet(nn.Module):
         return self.conv1x1(y)
 
 if __name__ == '__main__':
-    ras = TransUnet(img_dim=512, in_channels=1, classes=20, patch_size=1).cuda()
-    input_tensor = torch.randn(1, 1, 512, 512).cuda()
+    # ras = TransUnet(img_dim=880, in_channels=1, classes=20, patch_size=1).cuda()
+    # input_tensor = torch.randn(1, 1, 880, 880).cuda()
+    #
+    # # out = ras(input_tensor)
+    # # print(out)
+    #
+    # from torchsummary import summary
+    #
+    # print(summary(ras, (1, 880, 880)))
 
-    out = ras(input_tensor)
-    print(out)
+    # from torchstat import stat
+    #
+    # # 导入模型，输入一张输入图片的尺寸
+    # model = TransUnet(img_dim=880, in_channels=1, classes=20, patch_size=1)
+    # stat(model, (1, 880, 880))
+
+    from thop import profile
+
+    model = TransUnet(img_dim=880, in_channels=1, classes=20, patch_size=1)
+    input = torch.randn(1, 1, 880, 880)
+    flops, param = profile(model, inputs=(input,))
+    print(flops, param)

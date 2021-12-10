@@ -212,5 +212,9 @@ class PSPNet(nn.Module):
 
         return self.final(p)
 
+if __name__ == '__main__':
+    from torchstat import stat
 
-    
+    # 导入模型，输入一张输入图片的尺寸
+    model = PSPNet(in_class=1, n_classes=20)
+    stat(model, (1, 880, 880))

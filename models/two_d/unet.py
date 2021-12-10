@@ -112,3 +112,16 @@ class Unet(nn.Module):
         x = self.up4(x, x1)
         x = self.outc(x)
         return x
+
+if __name__ == '__main__':
+    # ras = Unet(in_channels=1, classes=20).cuda()
+    # input_tensor = torch.randn(1, 1, 880, 880).cuda()
+    # from torchsummary import summary
+    #
+    # print(summary(ras, (1, 220, 220)))
+
+    from torchstat import stat
+
+    # 导入模型，输入一张输入图片的尺寸
+    model = Unet(in_channels=1, classes=20)
+    stat(model, (1, 880, 880))

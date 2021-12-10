@@ -293,9 +293,17 @@ def get_10x_lr_params(model):
 
 
 if __name__ == "__main__":
-    model = DeepLabv3_plus(nInputChannels=3, n_classes=6, os=8, pretrained=True, _print=True)
-    model.eval()
-    image = torch.randn(1, 3, 512, 512)
-    with torch.no_grad():
-        output = model.forward(image)
-    print(output.size())
+    # model = DeepLabv3_plus(nInputChannels=1, n_classes=20, os=16, pretrained=False, _print=True).cuda()
+    # # model = ResNet101(nInputChannels=1, os=16, pretrained=False).cuda()
+    # image = torch.randn(1, 1, 176, 176).cuda()
+    # from torchsummary import summary
+    # print(summary(model, (1, 176, 176)))
+    # with torch.no_grad():
+    #     output = model.forward(image)
+    # print(output[0].shape)
+
+    from torchstat import stat
+
+    # 导入模型，输入一张输入图片的尺寸
+    model = DeepLabv3_plus(nInputChannels=1, n_classes=20)
+    stat(model, (1, 880, 880))

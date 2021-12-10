@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import os
 
+
 class ConvBlock(nn.Module):
     def __init__(self, in_planes, out_planes, stride=1):
         super(ConvBlock, self).__init__()
@@ -20,8 +21,10 @@ class DilatedParallelConvBlockD2(nn.Module):
     def __init__(self, in_planes, out_planes):
         super(DilatedParallelConvBlockD2, self).__init__()
         self.conv0 = nn.Conv2d(in_planes, out_planes, 1, stride=1, padding=0, dilation=1, groups=1, bias=False)
-        self.conv1 = nn.Conv2d(out_planes, out_planes, 3, stride=1, padding=1, dilation=1, groups=out_planes, bias=False)
-        self.conv2 = nn.Conv2d(out_planes, out_planes, 3, stride=1, padding=2, dilation=2, groups=out_planes, bias=False)
+        self.conv1 = nn.Conv2d(out_planes, out_planes, 3, stride=1, padding=1, dilation=1, groups=out_planes,
+                               bias=False)
+        self.conv2 = nn.Conv2d(out_planes, out_planes, 3, stride=1, padding=2, dilation=2, groups=out_planes,
+                               bias=False)
         self.bn = nn.BatchNorm2d(out_planes)
 
     def forward(self, input):
@@ -39,16 +42,19 @@ class DilatedParallelConvBlock(nn.Module):
         assert out_planes % 4 == 0
         inter_planes = out_planes // 4
         self.conv1x1_down = nn.Conv2d(in_planes, inter_planes, 1, padding=0, groups=1, bias=False)
-        self.conv1 = nn.Conv2d(inter_planes, inter_planes, 3, stride=stride, padding=1, dilation=1, groups=inter_planes, bias=False)
-        self.conv2 = nn.Conv2d(inter_planes, inter_planes, 3, stride=stride, padding=2, dilation=2, groups=inter_planes, bias=False)
-        self.conv3 = nn.Conv2d(inter_planes, inter_planes, 3, stride=stride, padding=4, dilation=4, groups=inter_planes, bias=False)
-        self.conv4 = nn.Conv2d(inter_planes, inter_planes, 3, stride=stride, padding=8, dilation=8, groups=inter_planes, bias=False)
+        self.conv1 = nn.Conv2d(inter_planes, inter_planes, 3, stride=stride, padding=1, dilation=1, groups=inter_planes,
+                               bias=False)
+        self.conv2 = nn.Conv2d(inter_planes, inter_planes, 3, stride=stride, padding=2, dilation=2, groups=inter_planes,
+                               bias=False)
+        self.conv3 = nn.Conv2d(inter_planes, inter_planes, 3, stride=stride, padding=4, dilation=4, groups=inter_planes,
+                               bias=False)
+        self.conv4 = nn.Conv2d(inter_planes, inter_planes, 3, stride=stride, padding=8, dilation=8, groups=inter_planes,
+                               bias=False)
         self.pool = nn.AvgPool2d(3, stride=stride, padding=1)
         self.conv1x1_fuse = nn.Conv2d(out_planes, out_planes, 1, padding=0, groups=4, bias=False)
         self.attention = nn.Conv2d(out_planes, 4, 1, padding=0, groups=4, bias=False)
         self.bn = nn.BatchNorm2d(out_planes)
         self.act = nn.PReLU(out_planes)
-
 
     def forward(self, input):
         output = self.conv1x1_down(input)
@@ -95,15 +101,13 @@ def split(x):
 
 
 class MiniSeg(nn.Module):
-    def __init__(self, in_input = 3,classes=2, P1=2, P2=3, P3=8, P4=6, aux=False):
+    def __init__(self, in_input=3, classes=2, P1=2, P2=3, P3=8, P4=6, aux=False):
         super(MiniSeg, self).__init__()
 
-
-
-        self.D1 = int(P1/2)
-        self.D2 = int(P2/2)
-        self.D3 = int(P3/2)
-        self.D4 = int(P4/2)
+        self.D1 = int(P1 / 2)
+        self.D2 = int(P2 / 2)
+        self.D3 = int(P3 / 2)
+        self.D4 = int(P4 / 2)
         self.aux = aux
 
         self.long1 = DownsamplerBlock(in_input, 8, stride=2)
@@ -116,8 +120,8 @@ class MiniSeg(nn.Module):
             self.level1_long.append(DownsamplerBlock(8, 8, stride=1))
 
         self.cat1 = nn.Sequential(
-                    nn.Conv2d(16, 16, 1, stride=1, padding=0, groups=1, bias=False),
-                    nn.BatchNorm2d(16))
+            nn.Conv2d(16, 16, 1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(16))
 
         self.long2 = DownsamplerBlock(8, 24, stride=2)
         self.down2 = DilatedParallelConvBlock(8, 24, stride=2)
@@ -129,8 +133,8 @@ class MiniSeg(nn.Module):
             self.level2_long.append(DownsamplerBlock(24, 24, stride=1))
 
         self.cat2 = nn.Sequential(
-                    nn.Conv2d(48, 48, 1, stride=1, padding=0, groups=1, bias=False),
-                    nn.BatchNorm2d(48))
+            nn.Conv2d(48, 48, 1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(48))
 
         self.long3 = DownsamplerBlock(24, 32, stride=2)
         self.down3 = DilatedParallelConvBlock(24, 32, stride=2)
@@ -142,8 +146,8 @@ class MiniSeg(nn.Module):
             self.level3_long.append(DownsamplerBlock(32, 32, stride=1))
 
         self.cat3 = nn.Sequential(
-                    nn.Conv2d(64, 64, 1, stride=1, padding=0, groups=1, bias=False),
-                    nn.BatchNorm2d(64))
+            nn.Conv2d(64, 64, 1, stride=1, padding=0, groups=1, bias=False),
+            nn.BatchNorm2d(64))
 
         self.long4 = DownsamplerBlock(32, 64, stride=2)
         self.down4 = DilatedParallelConvBlock(32, 64, stride=2)
@@ -262,8 +266,14 @@ class MiniSeg(nn.Module):
         pred1 = F.interpolate(self.pred1(up1), input.size()[2:], mode='bilinear', align_corners=False)
 
         if self.aux:
-            return (pred1, pred2, pred3, pred4, )
+            return (pred1, pred2, pred3, pred4,)
         else:
             return pred1
 
-    
+
+if __name__ == '__main__':
+    from torchstat import stat
+
+    # 导入模型，输入一张输入图片的尺寸
+    model = MiniSeg(in_input=1, classes=20)
+    stat(model, (1, 880, 880))

@@ -2,8 +2,75 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-# from layers import unetConv2
-from models.two_d.init_weights import init_weights
+from torch.nn import init
+
+
+## -------------initial weight --------------
+def weights_init_normal(m):
+    classname = m.__class__.__name__
+    # print(classname)
+    if classname.find('Conv') != -1:
+        init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('Linear') != -1:
+        init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        init.normal_(m.weight.data, 1.0, 0.02)
+        init.constant_(m.bias.data, 0.0)
+
+
+def weights_init_xavier(m):
+    classname = m.__class__.__name__
+    # print(classname)
+    if classname.find('Conv') != -1:
+        init.xavier_normal_(m.weight.data, gain=1)
+    elif classname.find('Linear') != -1:
+        init.xavier_normal_(m.weight.data, gain=1)
+    elif classname.find('BatchNorm') != -1:
+        init.normal_(m.weight.data, 1.0, 0.02)
+        init.constant_(m.bias.data, 0.0)
+
+
+def weights_init_kaiming(m):
+    classname = m.__class__.__name__
+    # print(classname)
+    if classname.find('Conv') != -1:
+        init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+    elif classname.find('Linear') != -1:
+        init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+    elif classname.find('BatchNorm') != -1:
+        init.normal_(m.weight.data, 1.0, 0.02)
+        init.constant_(m.bias.data, 0.0)
+
+
+def weights_init_orthogonal(m):
+    classname = m.__class__.__name__
+    # print(classname)
+    if classname.find('Conv') != -1:
+        init.orthogonal_(m.weight.data, gain=1)
+    elif classname.find('Linear') != -1:
+        init.orthogonal_(m.weight.data, gain=1)
+    elif classname.find('BatchNorm') != -1:
+        init.normal_(m.weight.data, 1.0, 0.02)
+        init.constant_(m.bias.data, 0.0)
+
+
+def init_weights(net, init_type='normal'):
+    # print('initialization method [%s]' % init_type)
+    if init_type == 'normal':
+        net.apply(weights_init_normal)
+    elif init_type == 'xavier':
+        net.apply(weights_init_xavier)
+    elif init_type == 'kaiming':
+        net.apply(weights_init_kaiming)
+    elif init_type == 'orthogonal':
+        net.apply(weights_init_orthogonal)
+    else:
+        raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
+
+
+## -------------initial weight --------------
+
+
 class unetConv2(nn.Module):
     def __init__(self, in_size, out_size, is_batchnorm, n=2, ks=3, stride=1, padding=1):
         super(unetConv2, self).__init__()
@@ -40,9 +107,12 @@ class unetConv2(nn.Module):
 
         return x
 
+
 '''
     UNet 3+
 '''
+
+
 class UNet_3Plus(nn.Module):
 
     def __init__(self, in_channels=3, n_classes=1, feature_scale=4, is_deconv=True, is_batchnorm=True):
@@ -247,7 +317,7 @@ class UNet_3Plus(nn.Module):
         h4_Cat_hd4 = self.h4_Cat_hd4_relu(self.h4_Cat_hd4_bn(self.h4_Cat_hd4_conv(h4)))
         hd5_UT_hd4 = self.hd5_UT_hd4_relu(self.hd5_UT_hd4_bn(self.hd5_UT_hd4_conv(self.hd5_UT_hd4(hd5))))
         hd4 = self.relu4d_1(self.bn4d_1(self.conv4d_1(
-            torch.cat((h1_PT_hd4, h2_PT_hd4, h3_PT_hd4, h4_Cat_hd4, hd5_UT_hd4), 1)))) # hd4->40*40*UpChannels
+            torch.cat((h1_PT_hd4, h2_PT_hd4, h3_PT_hd4, h4_Cat_hd4, hd5_UT_hd4), 1))))  # hd4->40*40*UpChannels
 
         h1_PT_hd3 = self.h1_PT_hd3_relu(self.h1_PT_hd3_bn(self.h1_PT_hd3_conv(self.h1_PT_hd3(h1))))
         h2_PT_hd3 = self.h2_PT_hd3_relu(self.h2_PT_hd3_bn(self.h2_PT_hd3_conv(self.h2_PT_hd3(h2))))
@@ -255,7 +325,7 @@ class UNet_3Plus(nn.Module):
         hd4_UT_hd3 = self.hd4_UT_hd3_relu(self.hd4_UT_hd3_bn(self.hd4_UT_hd3_conv(self.hd4_UT_hd3(hd4))))
         hd5_UT_hd3 = self.hd5_UT_hd3_relu(self.hd5_UT_hd3_bn(self.hd5_UT_hd3_conv(self.hd5_UT_hd3(hd5))))
         hd3 = self.relu3d_1(self.bn3d_1(self.conv3d_1(
-            torch.cat((h1_PT_hd3, h2_PT_hd3, h3_Cat_hd3, hd4_UT_hd3, hd5_UT_hd3), 1)))) # hd3->80*80*UpChannels
+            torch.cat((h1_PT_hd3, h2_PT_hd3, h3_Cat_hd3, hd4_UT_hd3, hd5_UT_hd3), 1))))  # hd3->80*80*UpChannels
 
         h1_PT_hd2 = self.h1_PT_hd2_relu(self.h1_PT_hd2_bn(self.h1_PT_hd2_conv(self.h1_PT_hd2(h1))))
         h2_Cat_hd2 = self.h2_Cat_hd2_relu(self.h2_Cat_hd2_bn(self.h2_Cat_hd2_conv(h2)))
@@ -263,7 +333,7 @@ class UNet_3Plus(nn.Module):
         hd4_UT_hd2 = self.hd4_UT_hd2_relu(self.hd4_UT_hd2_bn(self.hd4_UT_hd2_conv(self.hd4_UT_hd2(hd4))))
         hd5_UT_hd2 = self.hd5_UT_hd2_relu(self.hd5_UT_hd2_bn(self.hd5_UT_hd2_conv(self.hd5_UT_hd2(hd5))))
         hd2 = self.relu2d_1(self.bn2d_1(self.conv2d_1(
-            torch.cat((h1_PT_hd2, h2_Cat_hd2, hd3_UT_hd2, hd4_UT_hd2, hd5_UT_hd2), 1)))) # hd2->160*160*UpChannels
+            torch.cat((h1_PT_hd2, h2_Cat_hd2, hd3_UT_hd2, hd4_UT_hd2, hd5_UT_hd2), 1))))  # hd2->160*160*UpChannels
 
         h1_Cat_hd1 = self.h1_Cat_hd1_relu(self.h1_Cat_hd1_bn(self.h1_Cat_hd1_conv(h1)))
         hd2_UT_hd1 = self.hd2_UT_hd1_relu(self.hd2_UT_hd1_bn(self.hd2_UT_hd1_conv(self.hd2_UT_hd1(hd2))))
@@ -271,14 +341,17 @@ class UNet_3Plus(nn.Module):
         hd4_UT_hd1 = self.hd4_UT_hd1_relu(self.hd4_UT_hd1_bn(self.hd4_UT_hd1_conv(self.hd4_UT_hd1(hd4))))
         hd5_UT_hd1 = self.hd5_UT_hd1_relu(self.hd5_UT_hd1_bn(self.hd5_UT_hd1_conv(self.hd5_UT_hd1(hd5))))
         hd1 = self.relu1d_1(self.bn1d_1(self.conv1d_1(
-            torch.cat((h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1), 1)))) # hd1->320*320*UpChannels
+            torch.cat((h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1), 1))))  # hd1->320*320*UpChannels
 
         d1 = self.outconv1(hd1)  # d1->320*320*n_classes
         return F.sigmoid(d1)
-    
+
+
 '''
     UNet 3+ with deep supervision
 '''
+
+
 class UNet_3Plus_DeepSup(nn.Module):
     def __init__(self, in_channels=3, n_classes=1, feature_scale=4, is_deconv=True, is_batchnorm=True):
         super(UNet_3Plus_DeepSup, self).__init__()
@@ -450,10 +523,10 @@ class UNet_3Plus_DeepSup(nn.Module):
         self.relu1d_1 = nn.ReLU(inplace=True)
 
         # -------------Bilinear Upsampling--------------
-        self.upscore6 = nn.Upsample(scale_factor=32,mode='bilinear')###
-        self.upscore5 = nn.Upsample(scale_factor=16,mode='bilinear')
-        self.upscore4 = nn.Upsample(scale_factor=8,mode='bilinear')
-        self.upscore3 = nn.Upsample(scale_factor=4,mode='bilinear')
+        self.upscore6 = nn.Upsample(scale_factor=32, mode='bilinear')  ###
+        self.upscore5 = nn.Upsample(scale_factor=16, mode='bilinear')
+        self.upscore4 = nn.Upsample(scale_factor=8, mode='bilinear')
+        self.upscore3 = nn.Upsample(scale_factor=4, mode='bilinear')
         self.upscore2 = nn.Upsample(scale_factor=2, mode='bilinear')
 
         # DeepSup
@@ -493,7 +566,7 @@ class UNet_3Plus_DeepSup(nn.Module):
         h4_Cat_hd4 = self.h4_Cat_hd4_relu(self.h4_Cat_hd4_bn(self.h4_Cat_hd4_conv(h4)))
         hd5_UT_hd4 = self.hd5_UT_hd4_relu(self.hd5_UT_hd4_bn(self.hd5_UT_hd4_conv(self.hd5_UT_hd4(hd5))))
         hd4 = self.relu4d_1(self.bn4d_1(self.conv4d_1(
-            torch.cat((h1_PT_hd4, h2_PT_hd4, h3_PT_hd4, h4_Cat_hd4, hd5_UT_hd4), 1)))) # hd4->40*40*UpChannels
+            torch.cat((h1_PT_hd4, h2_PT_hd4, h3_PT_hd4, h4_Cat_hd4, hd5_UT_hd4), 1))))  # hd4->40*40*UpChannels
 
         h1_PT_hd3 = self.h1_PT_hd3_relu(self.h1_PT_hd3_bn(self.h1_PT_hd3_conv(self.h1_PT_hd3(h1))))
         h2_PT_hd3 = self.h2_PT_hd3_relu(self.h2_PT_hd3_bn(self.h2_PT_hd3_conv(self.h2_PT_hd3(h2))))
@@ -501,7 +574,7 @@ class UNet_3Plus_DeepSup(nn.Module):
         hd4_UT_hd3 = self.hd4_UT_hd3_relu(self.hd4_UT_hd3_bn(self.hd4_UT_hd3_conv(self.hd4_UT_hd3(hd4))))
         hd5_UT_hd3 = self.hd5_UT_hd3_relu(self.hd5_UT_hd3_bn(self.hd5_UT_hd3_conv(self.hd5_UT_hd3(hd5))))
         hd3 = self.relu3d_1(self.bn3d_1(self.conv3d_1(
-            torch.cat((h1_PT_hd3, h2_PT_hd3, h3_Cat_hd3, hd4_UT_hd3, hd5_UT_hd3), 1)))) # hd3->80*80*UpChannels
+            torch.cat((h1_PT_hd3, h2_PT_hd3, h3_Cat_hd3, hd4_UT_hd3, hd5_UT_hd3), 1))))  # hd3->80*80*UpChannels
 
         h1_PT_hd2 = self.h1_PT_hd2_relu(self.h1_PT_hd2_bn(self.h1_PT_hd2_conv(self.h1_PT_hd2(h1))))
         h2_Cat_hd2 = self.h2_Cat_hd2_relu(self.h2_Cat_hd2_bn(self.h2_Cat_hd2_conv(h2)))
@@ -509,7 +582,7 @@ class UNet_3Plus_DeepSup(nn.Module):
         hd4_UT_hd2 = self.hd4_UT_hd2_relu(self.hd4_UT_hd2_bn(self.hd4_UT_hd2_conv(self.hd4_UT_hd2(hd4))))
         hd5_UT_hd2 = self.hd5_UT_hd2_relu(self.hd5_UT_hd2_bn(self.hd5_UT_hd2_conv(self.hd5_UT_hd2(hd5))))
         hd2 = self.relu2d_1(self.bn2d_1(self.conv2d_1(
-            torch.cat((h1_PT_hd2, h2_Cat_hd2, hd3_UT_hd2, hd4_UT_hd2, hd5_UT_hd2), 1)))) # hd2->160*160*UpChannels
+            torch.cat((h1_PT_hd2, h2_Cat_hd2, hd3_UT_hd2, hd4_UT_hd2, hd5_UT_hd2), 1))))  # hd2->160*160*UpChannels
 
         h1_Cat_hd1 = self.h1_Cat_hd1_relu(self.h1_Cat_hd1_bn(self.h1_Cat_hd1_conv(h1)))
         hd2_UT_hd1 = self.hd2_UT_hd1_relu(self.hd2_UT_hd1_bn(self.hd2_UT_hd1_conv(self.hd2_UT_hd1(hd2))))
@@ -517,26 +590,30 @@ class UNet_3Plus_DeepSup(nn.Module):
         hd4_UT_hd1 = self.hd4_UT_hd1_relu(self.hd4_UT_hd1_bn(self.hd4_UT_hd1_conv(self.hd4_UT_hd1(hd4))))
         hd5_UT_hd1 = self.hd5_UT_hd1_relu(self.hd5_UT_hd1_bn(self.hd5_UT_hd1_conv(self.hd5_UT_hd1(hd5))))
         hd1 = self.relu1d_1(self.bn1d_1(self.conv1d_1(
-            torch.cat((h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1), 1)))) # hd1->320*320*UpChannels
+            torch.cat((h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1), 1))))  # hd1->320*320*UpChannels
 
         d5 = self.outconv5(hd5)
-        d5 = self.upscore5(d5) # 16->256
+        d5 = self.upscore5(d5)  # 16->256
 
         d4 = self.outconv4(hd4)
-        d4 = self.upscore4(d4) # 32->256
+        d4 = self.upscore4(d4)  # 32->256
 
         d3 = self.outconv3(hd3)
-        d3 = self.upscore3(d3) # 64->256
+        d3 = self.upscore3(d3)  # 64->256
 
         d2 = self.outconv2(hd2)
-        d2 = self.upscore2(d2) # 128->256
+        d2 = self.upscore2(d2)  # 128->256
 
-        d1 = self.outconv1(hd1) # 256
-        return F.sigmoid(d1), F.sigmoid(d2), F.sigmoid(d3), F.sigmoid(d4), F.sigmoid(d5)
-    
+        d1 = self.outconv1(hd1)  # 256
+        # return F.sigmoid(d1), F.sigmoid(d2), F.sigmoid(d3), F.sigmoid(d4), F.sigmoid(d5)
+        return (d1 + d2 + d3 + d4 + d5) / 5
+
+
 '''
     UNet 3+ with deep supervision and class-guided module
 '''
+
+
 class UNet_3Plus_DeepSup_CGM(nn.Module):
 
     def __init__(self, in_channels=3, n_classes=1, feature_scale=4, is_deconv=True, is_batchnorm=True):
@@ -709,10 +786,10 @@ class UNet_3Plus_DeepSup_CGM(nn.Module):
         self.relu1d_1 = nn.ReLU(inplace=True)
 
         # -------------Bilinear Upsampling--------------
-        self.upscore6 = nn.Upsample(scale_factor=32,mode='bilinear')###
-        self.upscore5 = nn.Upsample(scale_factor=16,mode='bilinear')
-        self.upscore4 = nn.Upsample(scale_factor=8,mode='bilinear')
-        self.upscore3 = nn.Upsample(scale_factor=4,mode='bilinear')
+        self.upscore6 = nn.Upsample(scale_factor=32, mode='bilinear')  ###
+        self.upscore5 = nn.Upsample(scale_factor=16, mode='bilinear')
+        self.upscore4 = nn.Upsample(scale_factor=8, mode='bilinear')
+        self.upscore3 = nn.Upsample(scale_factor=4, mode='bilinear')
         self.upscore2 = nn.Upsample(scale_factor=2, mode='bilinear')
 
         # DeepSup
@@ -723,10 +800,10 @@ class UNet_3Plus_DeepSup_CGM(nn.Module):
         self.outconv5 = nn.Conv2d(filters[4], n_classes, 3, padding=1)
 
         self.cls = nn.Sequential(
-                    nn.Dropout(p=0.5),
-                    nn.Conv2d(filters[4], 2, 1),
-                    nn.AdaptiveMaxPool2d(1),
-                    nn.Sigmoid())
+            nn.Dropout(p=0.5),
+            nn.Conv2d(filters[4], 2, 1),
+            nn.AdaptiveMaxPool2d(1),
+            nn.Sigmoid())
 
         # initialise weights
         for m in self.modules():
@@ -735,7 +812,7 @@ class UNet_3Plus_DeepSup_CGM(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 init_weights(m, init_type='kaiming')
 
-    def dotProduct(self,seg,cls):
+    def dotProduct(self, seg, cls):
         B, N, H, W = seg.size()
         seg = seg.view(B, N, H * W)
         final = torch.einsum("ijk,ij->ijk", [seg, cls])
@@ -770,7 +847,7 @@ class UNet_3Plus_DeepSup_CGM(nn.Module):
         h4_Cat_hd4 = self.h4_Cat_hd4_relu(self.h4_Cat_hd4_bn(self.h4_Cat_hd4_conv(h4)))
         hd5_UT_hd4 = self.hd5_UT_hd4_relu(self.hd5_UT_hd4_bn(self.hd5_UT_hd4_conv(self.hd5_UT_hd4(hd5))))
         hd4 = self.relu4d_1(self.bn4d_1(self.conv4d_1(
-            torch.cat((h1_PT_hd4, h2_PT_hd4, h3_PT_hd4, h4_Cat_hd4, hd5_UT_hd4), 1)))) # hd4->40*40*UpChannels
+            torch.cat((h1_PT_hd4, h2_PT_hd4, h3_PT_hd4, h4_Cat_hd4, hd5_UT_hd4), 1))))  # hd4->40*40*UpChannels
 
         h1_PT_hd3 = self.h1_PT_hd3_relu(self.h1_PT_hd3_bn(self.h1_PT_hd3_conv(self.h1_PT_hd3(h1))))
         h2_PT_hd3 = self.h2_PT_hd3_relu(self.h2_PT_hd3_bn(self.h2_PT_hd3_conv(self.h2_PT_hd3(h2))))
@@ -778,7 +855,7 @@ class UNet_3Plus_DeepSup_CGM(nn.Module):
         hd4_UT_hd3 = self.hd4_UT_hd3_relu(self.hd4_UT_hd3_bn(self.hd4_UT_hd3_conv(self.hd4_UT_hd3(hd4))))
         hd5_UT_hd3 = self.hd5_UT_hd3_relu(self.hd5_UT_hd3_bn(self.hd5_UT_hd3_conv(self.hd5_UT_hd3(hd5))))
         hd3 = self.relu3d_1(self.bn3d_1(self.conv3d_1(
-            torch.cat((h1_PT_hd3, h2_PT_hd3, h3_Cat_hd3, hd4_UT_hd3, hd5_UT_hd3), 1)))) # hd3->80*80*UpChannels
+            torch.cat((h1_PT_hd3, h2_PT_hd3, h3_Cat_hd3, hd4_UT_hd3, hd5_UT_hd3), 1))))  # hd3->80*80*UpChannels
 
         h1_PT_hd2 = self.h1_PT_hd2_relu(self.h1_PT_hd2_bn(self.h1_PT_hd2_conv(self.h1_PT_hd2(h1))))
         h2_Cat_hd2 = self.h2_Cat_hd2_relu(self.h2_Cat_hd2_bn(self.h2_Cat_hd2_conv(h2)))
@@ -786,7 +863,7 @@ class UNet_3Plus_DeepSup_CGM(nn.Module):
         hd4_UT_hd2 = self.hd4_UT_hd2_relu(self.hd4_UT_hd2_bn(self.hd4_UT_hd2_conv(self.hd4_UT_hd2(hd4))))
         hd5_UT_hd2 = self.hd5_UT_hd2_relu(self.hd5_UT_hd2_bn(self.hd5_UT_hd2_conv(self.hd5_UT_hd2(hd5))))
         hd2 = self.relu2d_1(self.bn2d_1(self.conv2d_1(
-            torch.cat((h1_PT_hd2, h2_Cat_hd2, hd3_UT_hd2, hd4_UT_hd2, hd5_UT_hd2), 1)))) # hd2->160*160*UpChannels
+            torch.cat((h1_PT_hd2, h2_Cat_hd2, hd3_UT_hd2, hd4_UT_hd2, hd5_UT_hd2), 1))))  # hd2->160*160*UpChannels
 
         h1_Cat_hd1 = self.h1_Cat_hd1_relu(self.h1_Cat_hd1_bn(self.h1_Cat_hd1_conv(h1)))
         hd2_UT_hd1 = self.hd2_UT_hd1_relu(self.hd2_UT_hd1_bn(self.hd2_UT_hd1_conv(self.hd2_UT_hd1(hd2))))
@@ -794,21 +871,21 @@ class UNet_3Plus_DeepSup_CGM(nn.Module):
         hd4_UT_hd1 = self.hd4_UT_hd1_relu(self.hd4_UT_hd1_bn(self.hd4_UT_hd1_conv(self.hd4_UT_hd1(hd4))))
         hd5_UT_hd1 = self.hd5_UT_hd1_relu(self.hd5_UT_hd1_bn(self.hd5_UT_hd1_conv(self.hd5_UT_hd1(hd5))))
         hd1 = self.relu1d_1(self.bn1d_1(self.conv1d_1(
-            torch.cat((h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1), 1)))) # hd1->320*320*UpChannels
+            torch.cat((h1_Cat_hd1, hd2_UT_hd1, hd3_UT_hd1, hd4_UT_hd1, hd5_UT_hd1), 1))))  # hd1->320*320*UpChannels
 
         d5 = self.outconv5(hd5)
-        d5 = self.upscore5(d5) # 16->256
+        d5 = self.upscore5(d5)  # 16->256
 
         d4 = self.outconv4(hd4)
-        d4 = self.upscore4(d4) # 32->256
+        d4 = self.upscore4(d4)  # 32->256
 
         d3 = self.outconv3(hd3)
-        d3 = self.upscore3(d3) # 64->256
+        d3 = self.upscore3(d3)  # 64->256
 
         d2 = self.outconv2(hd2)
-        d2 = self.upscore2(d2) # 128->256
+        d2 = self.upscore2(d2)  # 128->256
 
-        d1 = self.outconv1(hd1) # 256
+        d1 = self.outconv1(hd1)  # 256
 
         d1 = self.dotProduct(d1, cls_branch_max)
         d2 = self.dotProduct(d2, cls_branch_max)

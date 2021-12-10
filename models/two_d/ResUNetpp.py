@@ -1,5 +1,7 @@
 import torch.nn as nn
 import torch
+
+
 # from core.modules import (
 #     ResidualConv,
 #     ASPP,
@@ -143,6 +145,7 @@ class AttentionBlock(nn.Module):
         out = self.conv_attn(out)
         return out * x2
 
+
 ## ---------------ResUnetPlusPlus-----------------
 
 
@@ -224,3 +227,11 @@ class ResUnetPlusPlus(nn.Module):
         out = self.output_layer(x9)
 
         return out
+
+
+if __name__ == '__main__':
+    from torchstat import stat
+
+    # 导入模型，输入一张输入图片的尺寸
+    model = ResUnetPlusPlus(channel=1, num_classes=20)
+    stat(model, (1, 880, 880))
