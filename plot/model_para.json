@@ -1,0 +1,34 @@
+{
+    "train": {
+        "Attention U-Net": 1008,
+        "DANet": 504,
+        "DeepLabv3+": 504,
+        "DenseASPP": 504,
+        "EMANet": 1008,
+        "Inf-Net": 504,
+        "MiniSeg": 126,
+        "PSANet": 1008,
+        "PSPNet": 504,
+        "R2UNet": 2016,
+        "ResUNet++": 1008,
+        "SegNet": 504,
+        "TransUNet": 2016,
+        "U-Net": 504
+    },
+    "valid": {
+        "Attention U-Net": 507,
+        "DANet": 507,
+        "DeepLabv3+": 507,
+        "DenseASPP": 507,
+        "EMANet": 507,
+        "Inf-Net": 507,
+        "MiniSeg": 507,
+        "PSANet": 507,
+        "PSPNet": 507,
+        "R2UNet": 507,
+        "ResUNet++": 507,
+        "SegNet": 507,
+        "TransUNet": 507,
+        "U-Net": 507
+    }
+}
