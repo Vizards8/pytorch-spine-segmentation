@@ -24,6 +24,7 @@
 
 ## 如何运行
 ### 准备数据
+* [GoogleDrive](https://drive.google.com/file/d/1JLwf17cy_dcMtTz8AaTJ1gd_LsDKxV8G/view?usp=share_link)
 * 将老师给的`mit_ai_2021_course_2_project_1_dataset_train_1`和`mit_ai_2021_course_2_project_1_dataset_train_2`合并
 * 不使用`mit_ai_2021_course_2_project_1_dataset_test`中的数据，因为没有标签
 * 将数据如下排列：务必检查好source200，label200，共计400个文件
